@@ -45,7 +45,7 @@ userRouter.post("/signin",async function(req,res)
             });
             return;
         }
-        console.log("after user found", user);
+      
         const hash = user?.passwordhash as string;
         const match = await bcrypt.compare(password,hash);
         if(!match)
@@ -55,13 +55,12 @@ userRouter.post("/signin",async function(req,res)
             });
             return;
         }
-        console.log("after password checked");
+        
         console.log(jwtsecret);
         const token = jwt.sign({
             id:user?._id
         },jwtsecret);
         
-        console.log("after signing token",token);
         res.status(200).json({
             token
         });
@@ -72,5 +71,8 @@ userRouter.post("/signin",async function(req,res)
         })
     }
 });
+
+
+
 
 export default userRouter;
