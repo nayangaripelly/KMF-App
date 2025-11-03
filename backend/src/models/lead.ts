@@ -10,7 +10,8 @@ const leadSchema = new schema({
     userId : {type:objectId,ref:"users",require:true},
     loanType: {type:String, enum:loanType, require:true},
     loanStatus :{type:String, enum:loanStatus, require:true},
-    createdAt : {type:String, require:true}
+    createdAt : {type:String, require:true},
+    updatedAt : {type:String, require:true}
 })
 
 export const leadModel = mongoose.model("leads",leadSchema);

@@ -1,18 +1,53 @@
+import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
+import calllogRouter from "./routes/calllog.js";
+import clientRouter from "./routes/client.js";
+import leadRouter from "./routes/lead.js";
+import statisticsRouter from "./routes/statistics.js";
 import userRouter from "./routes/user.js";
+
+// Load environment variables first
+dotenv.config();
+
 const app = express();
 
-app.use(express.json());
-app.use("/api/v1/users",userRouter);
+// Enable CORS for all origins (configure as needed for production)
+app.use(cors({
+  origin: '*', // In production, specify your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
-dotenv.config();
+app.use(express.json());
+
+// Routes
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/leads", leadRouter);
+app.use("/api/v1/clients", clientRouter);
+app.use("/api/v1/calllogs", calllogRouter);
+app.use("/api/v1/statistics", statisticsRouter);
+
 const mongourl = process.env.MONGODB_URL as string;
 async function main()
 {
     await mongoose.connect(mongourl);
-    app.listen(3000);
+    console.log('[SERVER] Connected to MongoDB');
+    app.listen(3003, () => {
+        console.log('[SERVER] Backend server running on port 3003');
+        console.log('[SERVER] Available endpoints:');
+        console.log('  - POST /api/v1/users/signup');
+        console.log('  - POST /api/v1/users/signin');
+        console.log('  - GET  /api/v1/clients/:userId');
+        console.log('  - GET  /api/v1/leads/:userId');
+        console.log('  - POST /api/v1/leads');
+        console.log('  - GET  /api/v1/calllogs/:userId');
+        console.log('  - POST /api/v1/calllogs');
+        console.log('  - GET  /api/v1/statistics/:userId');
+    });
 }
 
-main();
+main().catch((error) => {
+    console.error('[SERVER] Failed to start:', error);
+});

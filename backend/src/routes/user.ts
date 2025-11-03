@@ -1,8 +1,9 @@
-import { Router } from "express";
 import bcrypt from "bcrypt";
-import { userModel } from "../models/user.js";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { Router } from "express";
+import jwt from "jsonwebtoken";
+import { seedMockClients } from "../controllers/client.js";
+import { userModel } from "../models/user.js";
 dotenv.config();
 const userRouter = Router();
 
@@ -13,13 +14,19 @@ userRouter.post("/signup",async function(req, res)
     const hash = await bcrypt.hash(password,5);
     try
     {
-        await userModel.create({
+        const user = await userModel.create({
             username,
             emailId,
             passwordhash:hash,
             role,
             createdAt:Date.now()
         });
+        
+        // Seed mock clients for salesperson role
+        if (role === 'salesperson' && user._id) {
+            await seedMockClients(user._id.toString());
+        }
+        
         res.status(201).json({
             msg:"user successfully created!!"
         })
