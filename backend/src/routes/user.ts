@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { seedMockClients } from "../controllers/client.js";
 import { userModel } from "../models/user.js";
@@ -8,6 +8,27 @@ dotenv.config();
 const userRouter = Router();
 
 const jwtsecret = process.env.JWT_SECRET as string;
+
+// Middleware to verify JWT token
+interface AuthRequest extends Request {
+  userId?: string;
+}
+
+const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ msg: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, jwtsecret) as { id: string };
+    req.userId = decoded.id;
+    next();
+  } catch (error) {
+    return res.status(401).json({ msg: 'Invalid token' });
+  }
+};
 userRouter.post("/signup",async function(req, res)
 {
     const {username, emailId, password, role} = req.body;
@@ -79,7 +100,34 @@ userRouter.post("/signin",async function(req,res)
     }
 });
 
+// Get user info endpoint
+userRouter.get("/me", verifyToken, async function(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ msg: 'User ID not found' });
+        }
 
+        const user = await userModel.findById(userId).select('-passwordhash');
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
 
+        res.status(200).json({
+            success: true,
+            data: {
+                id: user._id.toString(),
+                username: user.username,
+                emailId: user.emailId,
+                role: user.role,
+            }
+        });
+    } catch (e) {
+        console.error('Error fetching user info:', e);
+        res.status(500).json({
+            msg: "something went wrong try again"
+        });
+    }
+});
 
 export default userRouter;

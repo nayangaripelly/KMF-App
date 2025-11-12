@@ -48,8 +48,8 @@ export default function LoginScreen() {
         setPassword('');
         setIsLoading(false);
         
-        // Redirect immediately to home page without alert to avoid aria-hidden issues
-        router.replace('/(tabs)');
+        // Redirect will be handled by index.tsx based on role
+        router.replace('/');
         return;
       }
     } catch (error) {

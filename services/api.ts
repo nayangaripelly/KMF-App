@@ -277,3 +277,23 @@ export async function getStatistics(userId: string, token: string): Promise<Stat
     };
   }
 }
+
+export interface UserInfo {
+  id: string;
+  username: string;
+  emailId: string;
+  role: 'salesperson' | 'fieldperson' | 'admin';
+}
+
+export async function getUserInfo(token: string): Promise<UserInfo> {
+  try {
+    console.log('[API] Fetching user info');
+    const data = await fetchWithAuth(`${API_BASE_URL}/users/me`, token);
+    const userInfo = data.data || data;
+    console.log('[API] User info retrieved:', userInfo);
+    return userInfo;
+  } catch (error) {
+    console.error('[API] Error fetching user info:', error);
+    throw error;
+  }
+}

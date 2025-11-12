@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getToken, removeToken } from '@/utils/storage';
+import { getUserInfo, type UserInfo } from '@/services/api';
 
 // Simple JWT decode function (for basic use case)
 function decodeJWT(token: string): { id: string } | null {
@@ -23,7 +24,7 @@ interface User {
   id: string;
   username?: string;
   emailId?: string;
-  role?: string;
+  role?: 'salesperson' | 'fieldperson' | 'admin';
 }
 
 interface AuthContextType {
@@ -48,11 +49,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = await getToken();
         if (storedToken) {
           try {
-            // Decode JWT to get user info
+            // Decode JWT to get user ID
             const decoded = decodeJWT(storedToken);
             if (decoded) {
-              setUser({ id: decoded.id });
               setTokenState(storedToken);
+              // Fetch full user info including role
+              try {
+                const userInfo = await getUserInfo(storedToken);
+                setUser({
+                  id: userInfo.id,
+                  username: userInfo.username,
+                  emailId: userInfo.emailId,
+                  role: userInfo.role,
+                });
+              } catch (error) {
+                console.error('Error fetching user info:', error);
+                // Fallback to just ID if API fails
+                setUser({ id: decoded.id });
+              }
             } else {
               await removeToken();
             }
@@ -76,7 +90,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const decoded = decodeJWT(newToken);
         if (decoded) {
-          setUser({ id: decoded.id });
+          // Fetch full user info including role
+          try {
+            const userInfo = await getUserInfo(newToken);
+            setUser({
+              id: userInfo.id,
+              username: userInfo.username,
+              emailId: userInfo.emailId,
+              role: userInfo.role,
+            });
+          } catch (error) {
+            console.error('Error fetching user info:', error);
+            // Fallback to just ID if API fails
+            setUser({ id: decoded.id });
+          }
         }
       } catch (error) {
         console.error('Error decoding token:', error);

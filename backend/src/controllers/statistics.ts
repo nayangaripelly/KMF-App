@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { calllogModel } from '../models/call_logs.js';
 import { leadModel } from '../models/lead.js';
+import { meetlogModel } from '../models/meetlogs.js';
 
 export const getStatisticsByUserId = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -20,8 +21,12 @@ export const getStatisticsByUserId = async (req: Request, res: Response): Promis
       leadModel.countDocuments({ userId: userObjectId, loanStatus: 'cold' }).exec(),
     ]);
 
+    // counting total meets
+    const totalMeets = await meetlogModel.countDocuments({userId: userObjectId}).exec();
+
     const statistics = {
       totalCalls,
+      totalMeets,
       hotLeads,
       warmLeads,
       coldLeads,
