@@ -283,6 +283,7 @@ export interface UserInfo {
   username: string;
   emailId: string;
   role: 'salesperson' | 'fieldperson' | 'admin';
+  createdAt: string;
 }
 
 export async function getUserInfo(token: string): Promise<UserInfo> {
@@ -295,5 +296,48 @@ export async function getUserInfo(token: string): Promise<UserInfo> {
   } catch (error) {
     console.error('[API] Error fetching user info:', error);
     throw error;
+  }
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  msg: string;
+}
+
+export async function changePassword(
+  passwordData: ChangePasswordRequest,
+  token: string
+): Promise<ChangePasswordResponse> {
+  try {
+    console.log('[API] Changing password');
+    const response = await fetch(`${API_BASE_URL}/users/change-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(passwordData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ msg: 'Password change failed' }));
+      throw new Error((errorData as ErrorResponse).msg || `Password change failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('[API] Password changed successfully');
+    return data as ChangePasswordResponse;
+  } catch (error) {
+    console.error('[API] Error changing password:', error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Network error. Please check your connection.');
   }
 }

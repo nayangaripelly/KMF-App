@@ -129,9 +129,13 @@ export default function WorkScreen() {
             <IconSymbol name="bell.fill" size={22} color="#FFB800" />
             <View style={styles.notificationDot} />
           </View>
-          <View style={styles.avatar}>
-            <ThemedText style={styles.avatarText}>{(user.username?.slice(0,2) || 'U').toUpperCase()}</ThemedText>
-          </View>
+          <TouchableOpacity
+            onPress={() => router.push('/profile')}
+            activeOpacity={0.7}>
+            <View style={styles.avatar}>
+              <ThemedText style={styles.avatarText}>{(user.username?.slice(0,2) || 'U').toUpperCase()}</ThemedText>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
 

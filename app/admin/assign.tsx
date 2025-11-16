@@ -1,23 +1,22 @@
-import React, { useState } from 'react';
+import AdminBottomNav from '@/components/admin-bottom-nav';
+import AssignModal from '@/components/assign-modal';
+import CreateClientForm from '@/components/create-client-form';
+import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  ActivityIndicator,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import AdminBottomNav from '@/components/admin-bottom-nav';
-import CreateClientForm from '@/components/create-client-form';
-import AssignModal from '@/components/assign-modal';
-import { useAuth } from '@/contexts/AuthContext';
-import { useThemeColor } from '@/hooks/use-theme-color';
 
 interface Client {
   id: string;
@@ -26,8 +25,12 @@ interface Client {
 }
 
 interface Salesperson {
-  id: string;
-  name: string;
+  _id: string;
+  username: string;
+  emailId: string;
+  passwordhash: string;
+  role: string;
+  createdAt: string;
 }
 
 export default function AssignWorkPage() {
@@ -36,16 +39,47 @@ export default function AssignWorkPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedClientForAssign, setSelectedClientForAssign] = useState<Client | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
+  const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const backgroundColor = useThemeColor({}, 'background');
 
   // Mock salespersons - TODO: Fetch from API
-  const salespersons: Salesperson[] = [
-    { id: 'sp1', name: 'Alex Johnson' },
-    { id: 'sp2', name: 'Maria Garcia' },
-    { id: 'sp3', name: 'David Kumar' },
-    { id: 'sp4', name: 'Lisa Chen' },
-  ];
+  // const salespersons: Salesperson[] = [
+  //   { id: 'sp1', name: 'Alex Johnson' },
+  //   { id: 'sp2', name: 'Maria Garcia' },
+  //   { id: 'sp3', name: 'David Kumar' },
+  //   { id: 'sp4', name: 'Lisa Chen' },
+  // ];
+  // useeffect to fetch salespersons from api
+  useEffect(() => {
+    const fetchSalespersons = async () => {
+      try {
+        console.log("Fetching salespersons...");
+        const response = await fetch("http://localhost:3003/api/v1/users/salespersons", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        const data = await response.json();
+        console.log("Fetched salespersons:", data);
+  
+        if (data.success && Array.isArray(data.salespersons)) {
+          setSalespersons(data.salespersons);
+        } else {
+          console.warn("Salespersons data missing or invalid:", data);
+          setSalespersons([]);
+        }
+      } catch (error) {
+        console.error("Error fetching salespersons:", error);
+        setSalespersons([]);
+      }
+    };
+  
+    fetchSalespersons();
+  }, [token]);
+  
 
   const filteredClients = clients.filter(
     (client) =>
@@ -54,6 +88,7 @@ export default function AssignWorkPage() {
   );
 
   const handleCreateClient = (newClient: { name: string; phone: string; location: string }) => {
+    console.log("Creating client...");
     const client: Client = {
       id: String(Date.now()),
       name: newClient.name,
@@ -64,6 +99,7 @@ export default function AssignWorkPage() {
   };
 
   const handleAssignClient = (salesperson: Salesperson) => {
+    console.log("Assigning client...");
     if (selectedClientForAssign) {
       setClients(clients.filter((c) => c.id !== selectedClientForAssign.id));
       setSelectedClientForAssign(null);
@@ -77,6 +113,15 @@ export default function AssignWorkPage() {
         <ThemedText type="title" style={styles.headerTitle}>
           Assign Work
         </ThemedText>
+        <TouchableOpacity
+          onPress={() => router.push('/profile')}
+          activeOpacity={0.7}>
+          <View style={styles.avatar}>
+            <ThemedText style={styles.avatarText}>
+              {(user?.username?.slice(0, 2) || 'U').toUpperCase()}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Main Content */}
@@ -147,7 +192,7 @@ export default function AssignWorkPage() {
 
       {/* Assign Salesperson Modal */}
       <AssignModal
-        visible={!!selectedClientForAssign}
+        visible={selectedClientForAssign != null}
         client={selectedClientForAssign}
         salespersons={salespersons}
         onClose={() => setSelectedClientForAssign(null)}
@@ -163,6 +208,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F4FF',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
     backgroundColor: '#FFFFFF',
@@ -173,6 +221,20 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1E3A5F',
+    flex: 1,
+  },
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#0a7ea4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   content: {
     flex: 1,

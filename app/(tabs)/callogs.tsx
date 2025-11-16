@@ -4,12 +4,13 @@ import {
   ScrollView,
   View,
   TextInput,
+  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/contexts/AuthContext';
@@ -165,11 +166,15 @@ export default function CallLogsScreen() {
           📞 Call Logs
         </ThemedText>
         <View style={styles.rightHeader}>
-          <View style={styles.avatar}>
-            <ThemedText style={styles.avatarText}>
-              {user.username?.[0]?.toUpperCase() || 'U'}
-            </ThemedText>
-          </View>
+          <TouchableOpacity
+            onPress={() => router.push('/profile')}
+            activeOpacity={0.7}>
+            <View style={styles.avatar}>
+              <ThemedText style={styles.avatarText}>
+                {user.username?.[0]?.toUpperCase() || 'U'}
+              </ThemedText>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
 

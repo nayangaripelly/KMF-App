@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getUserInfo } from '@/services/api';
 import { getToken, removeToken } from '@/utils/storage';
-import { getUserInfo, type UserInfo } from '@/services/api';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 // Simple JWT decode function (for basic use case)
 function decodeJWT(token: string): { id: string } | null {
@@ -25,6 +25,7 @@ interface User {
   username?: string;
   emailId?: string;
   role?: 'salesperson' | 'fieldperson' | 'admin';
+  createdAt?: string;
 }
 
 interface AuthContextType {
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   username: userInfo.username,
                   emailId: userInfo.emailId,
                   role: userInfo.role,
+                  createdAt: userInfo.createdAt,
                 });
               } catch (error) {
                 console.error('Error fetching user info:', error);

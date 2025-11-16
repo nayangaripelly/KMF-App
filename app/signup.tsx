@@ -1,23 +1,23 @@
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { signup } from '@/services/api';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { signup } from '@/services/api';
 
 export default function SignupScreen() {
   const [username, setUsername] = useState('');
@@ -36,8 +36,8 @@ export default function SignupScreen() {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters');
       return;
     }
     if (!role) {
@@ -100,13 +100,13 @@ export default function SignupScreen() {
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#F5F5F5',
+                      backgroundColor:  '#F5F5F5',
                       color: textColor,
-                      borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+                      borderColor:  '#E0E0E0',
                     },
                   ]}
                   placeholder="Enter your full name"
-                  placeholderTextColor={colorScheme === 'dark' ? '#9BA1A6' : '#9BA1A6'}
+                  placeholderTextColor={ '#9BA1A6'}
                   value={username}
                   onChangeText={setUsername}
                   autoCapitalize="words"
@@ -122,13 +122,13 @@ export default function SignupScreen() {
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#F5F5F5',
+                      backgroundColor:  '#F5F5F5',
                       color: textColor,
-                      borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+                      borderColor:  '#E0E0E0',
                     },
                   ]}
                   placeholder="Enter your email"
-                  placeholderTextColor={colorScheme === 'dark' ? '#9BA1A6' : '#9BA1A6'}
+                  placeholderTextColor={'#9BA1A6'}
                   value={emailId}
                   onChangeText={setEmailId}
                   autoCapitalize="none"
@@ -145,13 +145,13 @@ export default function SignupScreen() {
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#F5F5F5',
+                      backgroundColor: '#F5F5F5',
                       color: textColor,
-                      borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+                      borderColor:  '#E0E0E0',
                     },
                   ]}
                   placeholder="Create password"
-                  placeholderTextColor={colorScheme === 'dark' ? '#9BA1A6' : '#9BA1A6'}
+                  placeholderTextColor={ '#9BA1A6'}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
@@ -180,13 +180,9 @@ export default function SignupScreen() {
                         {
                           backgroundColor:
                             role === roleOption
-                              ? colorScheme === 'dark'
-                                ? '#4A4A4A'
-                                : '#E0E0E0'
-                              : colorScheme === 'dark'
-                                ? '#2A2A2A'
-                                : '#F5F5F5',
-                          borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+                              ? '#E0E0E0'
+                              : '#F5F5F5',
+                          borderColor:  '#E0E0E0',
                         },
                       ]}
                       onPress={() => setRole(roleOption)}

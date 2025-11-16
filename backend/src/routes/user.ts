@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { Router, Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import jwt from "jsonwebtoken";
-import { seedMockClients } from "../controllers/client.js";
+// import { seedMockClients } from "../controllers/client.js";
 import { userModel } from "../models/user.js";
 dotenv.config();
 const userRouter = Router();
@@ -29,6 +29,7 @@ const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
     return res.status(401).json({ msg: 'Invalid token' });
   }
 };
+
 userRouter.post("/signup",async function(req, res)
 {
     const {username, emailId, password, role} = req.body;
@@ -44,9 +45,9 @@ userRouter.post("/signup",async function(req, res)
         });
         
         // Seed mock clients for salesperson role
-        if (role === 'salesperson' && user._id) {
-            await seedMockClients(user._id.toString());
-        }
+        // if (role === 'salesperson' && user._id) {
+        //     await seedMockClients(user._id.toString());
+        // }
         
         res.status(201).json({
             msg:"user successfully created!!"
@@ -120,6 +121,7 @@ userRouter.get("/me", verifyToken, async function(req: AuthRequest, res: Respons
                 username: user.username,
                 emailId: user.emailId,
                 role: user.role,
+                createdAt: user.createdAt?.toString(),
             }
         });
     } catch (e) {
@@ -130,4 +132,103 @@ userRouter.get("/me", verifyToken, async function(req: AuthRequest, res: Respons
     }
 });
 
+// Change password endpoint
+userRouter.post("/change-password", verifyToken, async function(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.userId;
+        if (!userId) {
+            return res.status(401).json({ msg: 'User ID not found' });
+        }
+
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        // Validation
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ 
+                success: false,
+                msg: 'All password fields are required' 
+            });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ 
+                success: false,
+                msg: 'New password must be at least 8 characters long' 
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ 
+                success: false,
+                msg: 'New password and confirm password do not match' 
+            });
+        }
+
+        // Get user with password hash
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                msg: 'User not found' 
+            });
+        }
+
+        // Verify current password
+        const hash = user.passwordhash as string;
+        const match = await bcrypt.compare(currentPassword, hash);
+        if (!match) {
+            return res.status(401).json({ 
+                success: false,
+                msg: 'Current password is incorrect' 
+            });
+        }
+
+        // Hash new password
+        const newHash = await bcrypt.hash(newPassword, 5);
+
+        // Update password in database
+        user.passwordhash = newHash;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            msg: 'Password updated successfully'
+        });
+    } catch (e) {
+        console.error('Error changing password:', e);
+        res.status(500).json({
+            success: false,
+            msg: "Something went wrong. Please try again."
+        });
+    }
+});
+
+interface AuthRequest extends Request {
+    userId?: string;
+}
+
+userRouter.get("/salespersons",verifyToken, async function(req :AuthRequest, res:Response) {
+    const userId = req.userId;
+    if (!userId) {
+        return res.status(401).json({ msg: 'User ID not found' });
+    }
+    try {
+        const user = await userModel.find({role:"salesperson"});
+        if (user.length === 0) {
+            return res.status(404).json({ msg: 'salespersons not found' });
+        }
+        const salespersons = await userModel.find({role: "salesperson"});
+        console.log(salespersons);
+        res.status(200).json({
+            success: true,
+            salespersons : salespersons
+        });
+    } catch (e) {
+        console.error('Error fetching salespersons:', e);
+        res.status(500).json({
+            success: false,
+            msg: "Something went wrong. Please try again."
+        });
+    }
+});
 export default userRouter;

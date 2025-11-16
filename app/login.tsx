@@ -1,22 +1,22 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { login } from '@/services/api';
 import { saveToken } from '@/utils/storage';
 import { router } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -93,13 +93,13 @@ export default function LoginScreen() {
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#F5F5F5',
+                      backgroundColor: '#F5F5F5',
                       color: textColor,
-                      borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+                      borderColor:  '#E0E0E0',
                     },
                   ]}
                   placeholder="Enter your email"
-                  placeholderTextColor={colorScheme === 'dark' ? '#9BA1A6' : '#9BA1A6'}
+                  placeholderTextColor='#9BA1A6'
                   value={emailId}
                   onChangeText={setEmailId}
                   autoCapitalize="none"
@@ -116,13 +116,13 @@ export default function LoginScreen() {
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#F5F5F5',
+                      backgroundColor:  '#F5F5F5',
                       color: textColor,
-                      borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+                      borderColor: '#E0E0E0',
                     },
                   ]}
                   placeholder="Enter password"
-                  placeholderTextColor={colorScheme === 'dark' ? '#9BA1A6' : '#9BA1A6'}
+                  placeholderTextColor= '#9BA1A6'
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}

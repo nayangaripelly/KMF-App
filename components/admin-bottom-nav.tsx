@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { router } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { router } from 'expo-router';
+import React from 'react';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SFSymbols6_0 } from 'sf-symbols-typescript';
 
 interface BottomNavProps {
   activeTab: 'assign' | 'status' | 'statistics';
@@ -45,7 +46,7 @@ export default function AdminBottomNav({ activeTab }: BottomNavProps) {
             onPress={() => handleNavigate(item.route)}
             activeOpacity={0.7}>
             <IconSymbol
-              name={isActive ? `${item.icon}.fill` : item.icon}
+              name={isActive ? `${item.icon}.fill` as SFSymbols6_0 : item.icon as SFSymbols6_0}
               size={24}
               color={isActive ? '#0a7ea4' : '#687076'}
             />

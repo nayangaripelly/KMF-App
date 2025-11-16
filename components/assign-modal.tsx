@@ -1,25 +1,28 @@
+import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import React from 'react';
 import {
-  View,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Modal,
-  ScrollView,
-  Platform,
+  View,
 } from 'react-native';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
 
 interface Client {
   id: string;
   name: string;
   phone: string;
 }
-
 interface Salesperson {
-  id: string;
-  name: string;
+  _id: string;
+  username: string;
+  emailId: string;
+  passwordhash: string;
+  role: string;
+  createdAt: string;
 }
 
 interface AssignModalProps {
@@ -62,7 +65,7 @@ export default function AssignModal({
           </View>
 
           <View style={styles.clientInfo}>
-            <Text style={styles.clientInfoLabel}>Assigning to</Text>
+            <Text style={styles.clientInfoLabel}>Assigning</Text>
             <ThemedText type="defaultSemiBold" style={styles.clientName}>
               {client.name}
             </ThemedText>
@@ -74,11 +77,11 @@ export default function AssignModal({
           <ScrollView style={styles.salespersonList} showsVerticalScrollIndicator={false}>
             {salespersons.map((salesperson) => (
               <TouchableOpacity
-                key={salesperson.id}
+                key={salesperson._id}
                 style={styles.salespersonItem}
                 onPress={() => handleAssign(salesperson)}
                 activeOpacity={0.7}>
-                <Text style={styles.salespersonName}>{salesperson.name}</Text>
+                <Text style={styles.salespersonName}>{salesperson.username}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>

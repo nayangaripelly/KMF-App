@@ -12,6 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { ThemedText } from '@/components/themed-text';
 import AdminBottomNav from '@/components/admin-bottom-nav';
+import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
 
 interface Client {
   id: string;
@@ -25,6 +27,7 @@ interface Client {
 }
 
 export default function AdminStatusPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'Cold' | 'Warm' | 'Hot'>('all');
 
@@ -134,6 +137,15 @@ export default function AdminStatusPage() {
         <ThemedText type="title" style={styles.headerTitle}>
           Status
         </ThemedText>
+        <TouchableOpacity
+          onPress={() => router.push('/profile')}
+          activeOpacity={0.7}>
+          <View style={styles.avatar}>
+            <ThemedText style={styles.avatarText}>
+              {(user?.username?.slice(0, 2) || 'U').toUpperCase()}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Main Content */}
@@ -241,6 +253,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F4FF',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
     backgroundColor: '#FFFFFF',
@@ -251,6 +266,20 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1E3A5F',
+    flex: 1,
+  },
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#0a7ea4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   content: {
     flex: 1,

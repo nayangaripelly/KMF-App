@@ -1,45 +1,61 @@
-import React, { useState } from 'react';
+import AdminBottomNav from '@/components/admin-bottom-nav';
+import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Platform,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
-import AdminBottomNav from '@/components/admin-bottom-nav';
 
 interface Salesperson {
-  id: string;
-  name: string;
-  contact: string;
+  _id: string;
+  username: string;
+  emailId: string;
+  passwordhash: string;
+  role: string;
+  createdAt: string;
 }
 
 export default function StatisticsPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+    const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
 
-  const salespersons: Salesperson[] = [
-    { id: 'sp1', name: 'Alex Johnson', contact: '+1 (555) 123-4567' },
-    { id: 'sp2', name: 'Maria Garcia', contact: 'maria.garcia@company.com' },
-    { id: 'sp3', name: 'David Kumar', contact: '+1 (555) 234-5678' },
-    { id: 'sp4', name: 'Lisa Chen', contact: 'lisa.chen@company.com' },
-    { id: 'sp5', name: 'James Rodriguez', contact: '+1 (555) 345-6789' },
-    { id: 'sp6', name: 'Sarah Thompson', contact: 'sarah.thompson@company.com' },
-  ];
+  useEffect(() => {
+    const fetchSalespersons = async () => {
+      const response = await fetch(`http://localhost:3003/api/v1/users/salespersons`);
+      const data = await response.json();
+      console.log(data);
+      setSalespersons(data.salespersons);
+    };
+    fetchSalespersons();
+  }, []);
+  // const salespersons: Salesperson[] = [
+  //   { id: 'sp1', name: 'Alex Johnson', contact: '+1 (555) 123-4567' },
+  //   { id: 'sp2', name: 'Maria Garcia', contact: 'maria.garcia@company.com' },
+  //   { id: 'sp3', name: 'David Kumar', contact: '+1 (555) 234-5678' },
+  //   { id: 'sp4', name: 'Lisa Chen', contact: 'lisa.chen@company.com' },
+  //   { id: 'sp5', name: 'James Rodriguez', contact: '+1 (555) 345-6789' },
+  //   { id: 'sp6', name: 'Sarah Thompson', contact: 'sarah.thompson@company.com' },
+  // ];
+
 
   const filteredSalespersons = salespersons.filter((person) =>
-    person.name.toLowerCase().includes(searchQuery.toLowerCase())
+    person.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleViewStats = (salesperson: Salesperson) => {
     router.push({
       pathname: '/admin/statistics/[id]',
-      params: { id: salesperson.id, name: salesperson.name },
+      params: { id: salesperson._id, name: salesperson.username },
     } as any);
   };
 
@@ -58,6 +74,15 @@ export default function StatisticsPage() {
         <ThemedText type="title" style={styles.headerTitle}>
           Statistics
         </ThemedText>
+        <TouchableOpacity
+          onPress={() => router.push('/profile')}
+          activeOpacity={0.7}>
+          <View style={styles.avatar}>
+            <ThemedText style={styles.avatarText}>
+              {(user?.username?.slice(0, 2) || 'U').toUpperCase()}
+            </ThemedText>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Main Content */}
@@ -82,19 +107,19 @@ export default function StatisticsPage() {
           {filteredSalespersons.length > 0 ? (
             filteredSalespersons.map((person) => (
               <TouchableOpacity
-                key={person.id}
+                key={person._id}
                 style={styles.salespersonCard}
                 onPress={() => handleViewStats(person)}
                 activeOpacity={0.7}>
                 <View style={styles.salespersonCardContent}>
                   <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{getInitials(person.name)}</Text>
+                    <Text style={styles.avatarText}>{getInitials(person.username)}</Text>
                   </View>
                   <View style={styles.salespersonInfo}>
                     <ThemedText type="defaultSemiBold" style={styles.salespersonName}>
-                      {person.name}
+                      {person.username}
                     </ThemedText>
-                    <Text style={styles.salespersonContact}>{person.contact}</Text>
+                    <Text style={styles.salespersonContact}>{person.emailId}</Text>
                   </View>
                 </View>
                 <IconSymbol name="chevron.right" size={20} color="#9BA1A6" />
@@ -120,6 +145,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F4FF',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
     backgroundColor: '#FFFFFF',
@@ -130,6 +158,20 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1E3A5F',
+    flex: 1,
+  },
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#0a7ea4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   content: {
     flex: 1,
@@ -185,19 +227,19 @@ const styles = StyleSheet.create({
     gap: 12,
     flex: 1,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#0a7ea4',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
+  // avatar: {
+  //   width: 40,
+  //   height: 40,
+  //   borderRadius: 20,
+  //   backgroundColor: '#0a7ea4',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
+  // avatarText: {
+  //   fontSize: 14,
+  //   fontWeight: 'bold',
+  //   color: '#FFFFFF',
+  // },
   salespersonInfo: {
     flex: 1,
   },
