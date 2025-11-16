@@ -6,6 +6,9 @@ const router = express.Router();
 // GET /api/v1/clients/:userId
 router.get('/:userId', clientController.getClientsByUserId);
 
+// POST /api/v1/clients
+router.post('/',clientController.createClient);
+
 // POST /api/v1/clients/:userId/seed - Manual seed endpoint
 // router.post('/:userId/seed', async (req, res) => {
 //   try {

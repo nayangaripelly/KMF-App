@@ -1,22 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useAuth } from '@/contexts/AuthContext';
-import { getStatistics } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getStatistics } from '@/services/api';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SFSymbols6_0 } from 'sf-symbols-typescript';
 
 export default function StatisticsScreen() {
   const { user, token } = useAuth();
@@ -162,7 +163,7 @@ export default function StatisticsScreen() {
                   },
                 ]}>
                 <View style={styles.statCardHeader}>
-                  <IconSymbol name={card.icon} size={32} color={card.color} />
+                  <IconSymbol name={card.icon as SFSymbols6_0} size={32} color={card.color} />
                 </View>
                 <ThemedText style={[styles.statValue, { color: card.color }]}>
                   {card.value}

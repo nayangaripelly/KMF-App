@@ -3,8 +3,8 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { SFSymbols6_0 } from 'sf-symbols-typescript';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -46,7 +46,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <IconSymbol
               size={24}
-              name={focused ? 'chart.line.uptrend.xyaxis.fill' : 'chart.line.uptrend.xyaxis'}
+              name={focused ? 'chart.line.uptrend.xyaxis.fill' as SFSymbols6_0: 'chart.line.uptrend.xyaxis' as SFSymbols6_0}
               color={focused ? '#0a7ea4' : '#FF69B4'}
             />
           ),

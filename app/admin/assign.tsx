@@ -22,6 +22,7 @@ interface Client {
   id: string;
   name: string;
   phone: string;
+  location:string;
 }
 
 interface Salesperson {
@@ -93,19 +94,58 @@ export default function AssignWorkPage() {
       id: String(Date.now()),
       name: newClient.name,
       phone: newClient.phone,
+      location : newClient.location
     };
     setClients([...clients, client]);
     setShowCreateForm(false);
   };
 
-  const handleAssignClient = (salesperson: Salesperson) => {
-    console.log("Assigning client...");
-    if (selectedClientForAssign) {
-      setClients(clients.filter((c) => c.id !== selectedClientForAssign.id));
-      setSelectedClientForAssign(null);
+  // const handleAssignClient = (salesperson: Salesperson) => {
+  //   console.log("Assigning client...");
+  //   const assignedClient = null;
+  //   if (selectedClientForAssign) {
+  //     setClients(clients.filter((c) => c.id !== selectedClientForAssign.id));
+  //     for(clients of unassignedClients)
+  //     setSelectedClientForAssign(null);
+  //   }
+  // };
+
+  const handleAssignClient = async (salesperson: Salesperson) => {
+    if (!selectedClientForAssign) return;
+  
+    try {
+      const response = await fetch("http://localhost:3003/api/v1/clients", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: selectedClientForAssign.name,
+          phone: selectedClientForAssign.phone,
+          location:selectedClientForAssign.location,
+          salespersonId: salesperson._id,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        // Update UI only after DB update is successful
+        setClients((prev) =>
+          prev.filter((c) => c.id !== selectedClientForAssign.id)
+        );
+  
+        setSelectedClientForAssign(null);
+  
+        console.log("Client assigned successfully");
+      } else {
+        console.warn("Failed to assign client:", data.e.message || data.msg);
+      }
+    } catch (error) {
+      console.error("Error assigning client:", error);
     }
   };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: '#F0F4FF' }]} edges={['top']}>
       {/* Header */}

@@ -1,23 +1,23 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useAuth } from '@/contexts/AuthContext';
-import { getLeads, type Lead } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getLeads, type Lead } from '@/services/api';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type FilterType = 'All' | 'Cold' | 'Warm' | 'Hot';
 
@@ -179,9 +179,7 @@ export default function StatusScreen() {
               {
                 backgroundColor:
                   activeFilter === filter
-                    ? colorScheme === 'dark'
-                      ? '#4A4A4A'
-                      : '#F5F5F5'
+                    ? '#F5F5F5'
                     : '#FFFFFF',
                 ...(Platform.OS === 'web'
                   ? { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
@@ -212,8 +210,8 @@ export default function StatusScreen() {
           style={[
             styles.searchBar,
             {
-              backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#FFFFFF',
-              borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+              backgroundColor: '#FFFFFF',
+              borderColor: '#E0E0E0',
             },
           ]}>
           <IconSymbol name="magnifyingglass" size={20} color="#9BA1A6" />

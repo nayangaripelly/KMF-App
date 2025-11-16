@@ -1,23 +1,23 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useAuth } from '@/contexts/AuthContext';
-import { getCallLogs, type CallLog } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getCallLogs, type CallLog } from '@/services/api';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CallLogsScreen() {
   const { user, token } = useAuth();
@@ -184,8 +184,8 @@ export default function CallLogsScreen() {
           style={[
             styles.searchBar,
             {
-              backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#FFFFFF',
-              borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+              backgroundColor:  '#FFFFFF',
+              borderColor: '#E0E0E0',
             },
           ]}>
           <IconSymbol name="magnifyingglass" size={20} color="#9BA1A6" />
@@ -226,7 +226,7 @@ export default function CallLogsScreen() {
                 style={[
                   styles.callLogCard,
                   {
-                    backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#FFFFFF',
+                    backgroundColor: '#FFFFFF',
                     ...(Platform.OS === 'web'
                       ? { boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)' }
                       : {
