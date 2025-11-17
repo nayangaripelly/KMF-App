@@ -25,13 +25,21 @@ interface Salesperson {
 }
 
 export default function StatisticsPage() {
-  const { user } = useAuth();
+  const { user,token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
     const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
 
   useEffect(() => {
     const fetchSalespersons = async () => {
-      const response = await fetch(`http://localhost:3003/api/v1/users/salespersons`);
+      const response = await fetch(`http://localhost:3003/api/v1/users/salespersons`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await response.json();
       console.log(data);
       setSalespersons(data.salespersons);

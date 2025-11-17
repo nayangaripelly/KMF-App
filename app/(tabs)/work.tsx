@@ -1,23 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useAuth } from '@/contexts/AuthContext';
-import { getClients, type Client } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { getClients, type Client } from '@/services/api';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function WorkScreen() {
   const { user, token } = useAuth();
@@ -182,7 +182,7 @@ export default function WorkScreen() {
                     </ThemedText>
                     <View style={styles.phoneContainer}>
                       <IconSymbol name="phone.fill" size={16} color="#FF5C8A" />
-                      <ThemedText style={styles.phoneNumber}>+1 ({client.phoneNo.slice(0,3)}) {client.phoneNo.slice(3,6)}-{client.phoneNo.slice(6)}</ThemedText>
+                      <ThemedText style={styles.phoneNumber}>+91 {client.phoneNo.slice(0)} </ThemedText>
                     </View>
                   </View>
                   <View

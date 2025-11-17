@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { router, useSegments } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useAuth } from '@/contexts/AuthContext';
+import { router, useSegments } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 
 export default function Index() {
   const { user, token, isLoading } = useAuth();
@@ -19,6 +19,7 @@ export default function Index() {
     }
 
     // If user is logged in, redirect based on role
+    console.log('hi from index.tsx' ,user);
     const role = user.role;
 
     if (role === 'admin') {

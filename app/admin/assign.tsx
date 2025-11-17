@@ -124,7 +124,7 @@ export default function AssignWorkPage() {
           name: selectedClientForAssign.name,
           phone: selectedClientForAssign.phone,
           location:selectedClientForAssign.location,
-          salespersonId: salesperson._id,
+          salespersonId: '691746c62ac921398cb37a9c', //testing
         }),
       });
   

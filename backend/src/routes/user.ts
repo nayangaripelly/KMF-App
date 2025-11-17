@@ -218,6 +218,7 @@ userRouter.get("/salespersons",verifyToken, async function(req :AuthRequest, res
             return res.status(404).json({ msg: 'salespersons not found' });
         }
         const salespersons = await userModel.find({role: "salesperson"});
+        console.log("from /salesperson route");
         console.log(salespersons);
         res.status(200).json({
             success: true,
