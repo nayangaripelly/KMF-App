@@ -45,6 +45,7 @@ export const getClientsByUserId = async (req: Request, res: Response): Promise<v
 
 export const createClient = async (req:Request, res:Response) :Promise<void> => {
   const {name,phone,location,salespersonId} = req.body;
+  console.log(req.body);
   try 
   {
     const response = await clientModel.create({
@@ -60,13 +61,11 @@ export const createClient = async (req:Request, res:Response) :Promise<void> => 
     })
   }catch(e)
   {
-    res.status(403).json({
+    res.status(404).json({
       msg:"something went wrong. Client didn't get added",
-      e
     })
   }
 }
-
 // export const seedMockClients = async (userId: string): Promise<void> => {
 //   try {
 //     const userObjectId = new mongoose.Types.ObjectId(userId);

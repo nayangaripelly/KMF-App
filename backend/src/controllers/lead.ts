@@ -70,9 +70,27 @@ export const createLead = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
+
+export const getAllLeads = async (req:Request, res:Response):Promise<void> => {
+  try{
+    const leads = await leadModel.find({}).populate("clientId").populate("userId");
+    res.status(200).json({
+      leads,
+      success:true
+    })
+  }catch(e)
+  {
+    res.status(404).json({
+      msg:"something went wrong.fetching leads failed"
+    })
+  }
+}
+
+
 export const leadController = {
   getLeadsByUserId,
   createLead,
+  getAllLeads
 };
 
 export default leadController;

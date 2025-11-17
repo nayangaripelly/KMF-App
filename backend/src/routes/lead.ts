@@ -3,6 +3,9 @@ import leadController from '../controllers/lead.js';
 
 const router = express.Router();
 
+//get /api/v1/leads
+router.get("/", leadController.getAllLeads);
+
 // GET /api/v1/leads/:userId
 router.get('/:userId', leadController.getLeadsByUserId);
 

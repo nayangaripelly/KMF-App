@@ -1,105 +1,112 @@
-import React, { useState } from 'react';
+import AdminBottomNav from '@/components/admin-bottom-nav';
+import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Platform,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
-import AdminBottomNav from '@/components/admin-bottom-nav';
-import { useAuth } from '@/contexts/AuthContext';
-import { router } from 'expo-router';
 
-interface Client {
-  id: string;
-  name: string;
-  phone: string;
-  loanType: string;
-  loanTypeColor: 'blue' | 'green' | 'orange';
-  salesperson: string;
-  status: 'Cold' | 'Warm' | 'Hot';
-  statusColor: 'blue' | 'yellow' | 'red';
+interface Leads {
+  _id: string;
+  clientId: {
+    _id: string;
+    name: string;
+    phoneNo: string;
+    location?: string;
+    assignedTo?: string;
+    createdAt: string;
+  };
+  userId: {
+    _id: string;
+    username: string;
+    emailId: string;
+    role: string;
+  };
+  loanType: "business" | "student" | "personal" | "home";
+  loanStatus: "hot" | "warm" | "cold";
+  createdAt: string;
+  updatedAt: string;
 }
 
+
 export default function AdminStatusPage() {
-  const { user } = useAuth();
+  const { user,token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'Cold' | 'Warm' | 'Hot'>('all');
+  const [allLeads,setAllLeads] =useState<Leads[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'cold' | 'warm' | 'hot'>('all');
 
-  // Mock data: all clients across all salespersons
-  const allClients: Client[] = [
-    {
-      id: '1',
-      name: 'John Anderson',
-      phone: '+1 (555) 123-4567',
-      loanType: 'Personal Loan',
-      loanTypeColor: 'blue',
-      salesperson: 'Alex Johnson',
-      status: 'Cold',
-      statusColor: 'blue',
-    },
-    {
-      id: '2',
-      name: 'Sarah Mitchell',
-      phone: '+1 (555) 234-5678',
-      loanType: 'Business Loan',
-      loanTypeColor: 'green',
-      salesperson: 'Maria Garcia',
-      status: 'Warm',
-      statusColor: 'yellow',
-    },
-    {
-      id: '3',
-      name: 'Michael Chen',
-      phone: '+1 (555) 345-6789',
-      loanType: 'Home Loan',
-      loanTypeColor: 'orange',
-      salesperson: 'David Kumar',
-      status: 'Hot',
-      statusColor: 'red',
-    },
-    {
-      id: '4',
-      name: 'Emma Wilson',
-      phone: '+1 (555) 456-7890',
-      loanType: 'Personal Loan',
-      loanTypeColor: 'blue',
-      salesperson: 'Lisa Chen',
-      status: 'Warm',
-      statusColor: 'yellow',
-    },
-    {
-      id: '5',
-      name: 'James Rodriguez',
-      phone: '+1 (555) 567-8901',
-      loanType: 'Business Loan',
-      loanTypeColor: 'green',
-      salesperson: 'Alex Johnson',
-      status: 'Cold',
-      statusColor: 'blue',
-    },
-    {
-      id: '6',
-      name: 'Amanda Brown',
-      phone: '+1 (555) 678-9012',
-      loanType: 'Home Loan',
-      loanTypeColor: 'orange',
-      salesperson: 'Maria Garcia',
-      status: 'Hot',
-      statusColor: 'red',
-    },
-  ];
+ 
+  useEffect(()=> {
+    const fetchAllLeads = async () => {
+      try {
+        console.log("fetching leads");
+        const response = await fetch('http://localhost:3003/api/v1/leads',
+          {
+            method:"GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if(data.success)
+        {
+          setAllLeads(data.leads)
+        }else
+        {
+          setAllLeads([]);
+        }
+      }catch(e)
+      {
+        console.log("error in fetching all leads");
+        setAllLeads([]);
+      }
+    };
+    fetchAllLeads();
+  },[]);
 
-  const filteredClients = allClients.filter((client) => {
+  const loanTypetoColor = (loanType: string) => 
+  {
+    if(loanType === 'business')
+    {
+      return "blue";
+    }else if(loanType === 'student')
+    {
+      return "green"
+    }else 
+    {
+      return "orange"
+    }
+  }
+
+  const loanStatusToColor = (loanType: string) => 
+    {
+      if(loanType === 'hot')
+      {
+        return "red";
+      }else if(loanType === 'cold')
+      {
+        return "blue"
+      }else 
+      {
+        return "yellow"
+      }
+    } 
+
+  const filteredClients = allLeads.filter((lead) => {
     const matchesSearch =
-      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.phone.includes(searchQuery);
-    const matchesStatus = selectedFilter === 'all' || client.status === selectedFilter;
+      lead.clientId.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.clientId.phoneNo.includes(searchQuery);
+    const matchesStatus = selectedFilter === 'all' || lead.loanStatus === selectedFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -121,11 +128,11 @@ export default function AdminStatusPage() {
     return styles[color];
   };
 
-  const getCardBgStyle = (status: 'Cold' | 'Warm' | 'Hot') => {
+  const getCardBgStyle = (status: 'cold' | 'warm' | 'hot') => {
     const styles = {
-      Cold: { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' },
-      Warm: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
-      Hot: { backgroundColor: '#FEF2F2', borderColor: '#FECACA' },
+      cold: { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' },
+      warm: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+      hot: { backgroundColor: '#FEF2F2', borderColor: '#FECACA' },
     };
     return styles[status];
   };
@@ -159,7 +166,7 @@ export default function AdminStatusPage() {
           showsHorizontalScrollIndicator={false}
           style={styles.filterContainer}
           contentContainerStyle={styles.filterContent}>
-          {(['all', 'Cold', 'Warm', 'Hot'] as const).map((filter) => (
+          {(['all', 'cold', 'warm', 'hot'] as const).map((filter) => (
             <TouchableOpacity
               key={filter}
               style={[
@@ -173,7 +180,7 @@ export default function AdminStatusPage() {
                   styles.filterText,
                   selectedFilter === filter && styles.filterTextActive,
                 ]}>
-                {filter === 'all' ? 'All' : filter}
+                {filter === 'all' ? 'all' : filter}
               </Text>
             </TouchableOpacity>
           ))}
@@ -194,38 +201,38 @@ export default function AdminStatusPage() {
         {/* Client Cards */}
         <View style={styles.clientsList}>
           {filteredClients.length > 0 ? (
-            filteredClients.map((client) => (
+            filteredClients.map((lead) => (
               <View
-                key={client.id}
-                style={[styles.clientCard, getCardBgStyle(client.status)]}>
+                key={lead._id}
+                style={[styles.clientCard, getCardBgStyle(lead.loanStatus)]}>
                 <View style={styles.clientCardContent}>
                   <IconSymbol name="phone.fill" size={20} color="#0a7ea4" />
                   <View style={styles.clientInfo}>
                     <ThemedText type="defaultSemiBold" style={styles.clientName}>
-                      {client.name}
+                      {lead.clientId.name}
                     </ThemedText>
-                    <Text style={styles.salespersonName}>{client.salesperson}</Text>
+                    <Text style={styles.salespersonName}>{lead.userId.username}</Text>
                     <View style={styles.tagsContainer}>
                       <View
                         style={[
                           styles.tag,
-                          getLoanTypeTagStyle(client.loanTypeColor),
+                          getLoanTypeTagStyle(loanTypetoColor(lead.loanType)),
                         ]}>
                         <Text
                           style={[
                             styles.tagText,
-                            { color: getLoanTypeTagStyle(client.loanTypeColor).color },
+                            {color : getLoanTypeTagStyle(loanTypetoColor(lead.loanType)).color},
                           ]}>
-                          {client.loanType}
+                          {lead.loanType}
                         </Text>
                       </View>
-                      <View style={[styles.tag, getStatusTagStyle(client.statusColor)]}>
+                      <View style={[styles.tag, getStatusTagStyle(loanStatusToColor(lead.loanStatus))]}>
                         <Text
                           style={[
                             styles.tagText,
-                            { color: getStatusTagStyle(client.statusColor).color },
+                            { color: getStatusTagStyle(loanStatusToColor(lead.loanStatus)).color },
                           ]}>
-                          {client.status}
+                          {lead.loanStatus}
                         </Text>
                       </View>
                     </View>
