@@ -153,41 +153,42 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Confirm Logout',
-      "Are you sure you want to logout? You'll need to login again to access your account.",
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            setIsLoggingOut(true);
-            try {
-              console.log('[PROFILE] User logout initiated');
-              // Clear auth state
-              await logout();
-              console.log('[PROFILE] User logged out successfully, redirecting to login...');
-              // Reset navigation stack and navigate to login
-              router.replace('/login');
-            } catch (error) {
-              console.error('[PROFILE] Logout error:', error);
-              // Even if logout fails, clear local data and navigate to login
-              await logout();
-              console.log('[PROFILE] User logged out (fallback), redirecting to login...');
-              router.replace('/login');
-            } finally {
-              setIsLoggingOut(false);
-            }
-          },
-        },
-      ]
-    );
+const handleLogout = () => {
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      console.log('[PROFILE] User logout initiated');
+      await logout();
+      console.log('[PROFILE] User logged out, redirecting to login...');
+      router.replace('/login');
+    } catch (error) {
+      console.error('[PROFILE] Logout error:', error);
+      await logout();
+      router.replace('/login');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
+
+  // For Web
+  if (Platform.OS === 'web') {
+    const shouldLogout = window.confirm(
+      "Are you sure you want to logout? You'll need to login again."
+    );
+    if (shouldLogout) confirmLogout();
+    return;
+  }
+
+  // For iOS / Android
+  Alert.alert(
+    'Confirm Logout',
+    "Are you sure you want to logout? You'll need to login again to access your account.",
+    [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: confirmLogout },
+    ]
+  );
+};
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: '#F0F4FF' }]} edges={['top', 'bottom']}>
