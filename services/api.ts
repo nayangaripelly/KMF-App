@@ -143,6 +143,8 @@ export interface Statistics {
   hotLeads: number;
   warmLeads: number;
   coldLeads: number;
+  // Optional fields to stay in sync with backend while remaining backwards compatible
+  totalMeets?: number;
 }
 
 async function fetchWithAuth(url: string, token: string, options: RequestInit = {}) {

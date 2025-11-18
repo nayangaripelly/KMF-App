@@ -29,7 +29,9 @@ export default function ClientDetailScreen() {
   // Form state
   const [loanType, setLoanType] = useState<'personal' | 'business' | 'student' | 'home' | ''>('');
   const [loanStatus, setLoanStatus] = useState<'hot' | 'warm' | 'cold' | ''>('');
+  const [callStatus, setCallStatus] = useState<'connected' | 'rejected' | 'followup' | 'missed' | ''>('');
   const [notes, setNotes] = useState('');
+  const [callDuration, setCallDuration] = useState('');
   
   const colorScheme = useColorScheme() ?? 'light';
   const backgroundColor = useThemeColor({}, 'background');
@@ -75,8 +77,8 @@ export default function ClientDetailScreen() {
   const handleSave = async () => {
     if (!client || !user?.id || !token) return;
 
-    if (!loanType || !loanStatus) {
-      Alert.alert('Error', 'Please select both loan type and interest status');
+    if (!callStatus) {
+      Alert.alert('Error', 'Please select a call status');
       return;
     }
 
@@ -88,15 +90,12 @@ export default function ClientDetailScreen() {
     setIsSaving(true);
     try {
       const calledTime = new Date().toISOString();
-      const duration = '5 min 30 sec'; // Mock duration for now
-      
-      // Determine call type based on loan status
-      const callType: 'incoming' | 'outgoing' | 'missed' = 
-        loanStatus === 'hot' ? 'outgoing' : loanStatus === 'warm' ? 'outgoing' : 'missed';
-      
-      // Determine call log status based on loan status
-      const callLogStatus: 'connected' | 'rejected' | 'followup' | 'missed' =
-        loanStatus === 'hot' ? 'connected' : loanStatus === 'warm' ? 'followup' : 'rejected';
+
+      // For now, treat all calls initiated from this screen as outgoing.
+      const callType: 'incoming' | 'outgoing' | 'missed' = 'outgoing';
+
+      // Use explicitly selected call status for call log
+      const callLogStatus = callStatus;
       
       console.log('[CLIENT DETAIL] Saving client data:', {
         clientId: client._id,
@@ -108,16 +107,18 @@ export default function ClientDetailScreen() {
         notes,
       });
 
-      // Create lead
-      await createLead(
-        {
-          clientId: client._id,
-          loanType,
-          loanStatus,
-          userId: user.id,
-        },
-        token
-      );
+      // Create lead only if loan type and interest status are provided
+      if (loanType && loanStatus) {
+        await createLead(
+          {
+            clientId: client._id,
+            loanType,
+            loanStatus,
+            userId: user.id,
+          },
+          token
+        );
+      }
 
       // Create call log
       await createCallLog(
@@ -125,7 +126,7 @@ export default function ClientDetailScreen() {
           clientId: client._id,
           status: callLogStatus,
           callType,
-          duration,
+          duration: callDuration || undefined,
           calledTime,
           note: notes || undefined,
           userId: user.id,
@@ -328,6 +329,68 @@ export default function ClientDetailScreen() {
             multiline
             numberOfLines={4}
             textAlignVertical="top"
+          />
+        </View>
+
+        {/* Call Status */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Call Status</ThemedText>
+          <View style={styles.selectionContainer}>
+            {(['connected', 'rejected', 'followup', 'missed'] as const).map((status) => {
+              const statusColors: Record<string, string> = {
+                connected: '#34C759',
+                rejected: '#FF3B30',
+                followup: '#FF9500',
+                missed: '#9E9E9E',
+              };
+              const statusBgColors: Record<string, string> = {
+                connected: '#E8F5E9',
+                rejected: '#FFEBEE',
+                followup: '#FFF3E0',
+                missed: '#F5F5F5',
+              };
+
+              return (
+                <TouchableOpacity
+                  key={status}
+                  style={[
+                    styles.selectionButton,
+                    {
+                      backgroundColor:
+                        callStatus === status ? statusColors[status] : statusBgColors[status],
+                      borderColor: callStatus === status ? statusColors[status] : '#E0E0E0',
+                    },
+                  ]}
+                  onPress={() => setCallStatus(status)}>
+                  <ThemedText
+                    style={[
+                      styles.selectionButtonText,
+                      { color: callStatus === status ? '#FFFFFF' : statusColors[status] },
+                    ]}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Call Duration (Optional) */}
+        <View style={styles.section}>
+          <ThemedText style={styles.sectionTitle}>Call Duration (Optional)</ThemedText>
+          <TextInput
+            style={[
+              styles.notesInput,
+              {
+                backgroundColor: '#F5F5F5',
+                color: textColor,
+                borderColor: '#E0E0E0',
+              },
+            ]}
+            placeholder="e.g. 2 min 30 sec"
+            placeholderTextColor="#9BA1A6"
+            value={callDuration}
+            onChangeText={setCallDuration}
           />
         </View>
 

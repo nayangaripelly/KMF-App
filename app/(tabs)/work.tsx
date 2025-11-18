@@ -4,7 +4,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { getClients, type Client } from '@/services/api';
+import { getCallLogs, getClients, getLeads, type CallLog, type Client, type Lead } from '@/services/api';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -23,6 +23,8 @@ export default function WorkScreen() {
   const { user, token } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -47,33 +49,45 @@ export default function WorkScreen() {
   );
 
   useEffect(() => {
+    // Exclude clients that already have a lead (loan type & interest filled)
+    const completedClientIds = new Set(leads.map((lead) => lead.clientId._id));
+    const activeClients = clients.filter((client) => !completedClientIds.has(client._id));
+
     if (searchQuery.trim()) {
-      const filtered = clients.filter(
+      const filtered = activeClients.filter(
         (client) =>
           client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           client.phoneNo.includes(searchQuery)
       );
       setFilteredClients(filtered);
     } else {
-      setFilteredClients(clients);
+      setFilteredClients(activeClients);
     }
-  }, [searchQuery, clients]);
+  }, [searchQuery, clients, leads]);
 
   const loadClients = async () => {
     if (!user?.id || !token) return;
 
     setIsLoading(true);
     try {
-      console.log('[WORK PAGE] Loading clients for userId:', user.id);
-      const fetchedClients = await getClients(user.id, token);
+      console.log('[WORK PAGE] Loading clients, leads and call logs for userId:', user.id);
+      const [fetchedClients, fetchedLeads, fetchedCallLogs] = await Promise.all([
+        getClients(user.id, token),
+        getLeads(user.id, token),
+        getCallLogs(user.id, token),
+      ]);
+
       console.log('[WORK PAGE] Loaded clients:', fetchedClients);
+      console.log('[WORK PAGE] Loaded leads:', fetchedLeads);
+      console.log('[WORK PAGE] Loaded call logs:', fetchedCallLogs);
+
       setClients(fetchedClients);
-      setFilteredClients(fetchedClients);
+      setLeads(fetchedLeads);
+      setCallLogs(fetchedCallLogs);
       
       // If no clients found, log a warning
       if (fetchedClients.length === 0) {
-        console.warn('[WORK PAGE] No clients found. Backend should auto-seed, but check if userId matches.');
-        console.log('[WORK PAGE] User ID from token:', user.id);
+        console.warn('[WORK PAGE] No clients found. Check assignments for this salesperson.');
       }
     } catch (error) {
       console.error('[WORK PAGE] Error loading clients:', error);
@@ -91,17 +105,23 @@ export default function WorkScreen() {
   };
 
   const getStatusBadge = (client: Client) => {
-    // Check if client has an active lead
-    const hasActiveLead = false; // TODO: Check from leads data
-    return hasActiveLead ? 'Active' : 'Pending';
+    const hasLead = leads.some((lead) => lead.clientId._id === client._id);
+    if (hasLead) return 'Completed';
+
+    const hasCallLog = callLogs.some((log) => log.clientId._id === client._id);
+    return hasCallLog ? 'Called' : 'New';
   };
 
   const getStatusBadgeColor = (status: string) => {
-    return status === 'Active' ? '#34C759' : '#FF9500';
+    if (status === 'Completed') return '#34C759';
+    if (status === 'Called') return '#FF9500';
+    return '#007AFF';
   };
 
   const getStatusBadgeBgColor = (status: string) => {
-    return status === 'Active' ? '#E8F5E9' : '#FFF3E0';
+    if (status === 'Completed') return '#E8F5E9';
+    if (status === 'Called') return '#FFF3E0';
+    return '#E3F2FD';
   };
 
   if (!user?.id || !token) {

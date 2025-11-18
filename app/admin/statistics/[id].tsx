@@ -1,7 +1,9 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
+import { CallLog, getCallLogs, getStatistics, Statistics } from '@/services/api';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -20,107 +22,189 @@ interface StatisticCard {
   icon: string;
 }
 
+interface ChartPoint {
+  label: string;
+  calls: number;
+}
+
+function buildChartData(timespan: TimeSpan, callLogs: CallLog[]): ChartPoint[] {
+  if (!callLogs.length) return [];
+
+  const now = new Date();
+
+  if (timespan === 'today') {
+    const byHour = new Map<string, number>();
+    callLogs.forEach((log) => {
+      const date = new Date(log.calledTime);
+      if (
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate()
+      ) {
+        const hour = date.getHours();
+        const label = `${hour.toString().padStart(2, '0')}:00`;
+        byHour.set(label, (byHour.get(label) || 0) + 1);
+      }
+    });
+    return Array.from(byHour.entries())
+      .sort((a, b) => (a[0] > b[0] ? 1 : -1))
+      .map(([label, calls]) => ({ label, calls }));
+  }
+
+  if (timespan === 'week') {
+    const start = new Date(now);
+    start.setDate(now.getDate() - 6);
+    const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const byDay = new Map<number, number>();
+
+    callLogs.forEach((log) => {
+      const date = new Date(log.calledTime);
+      if (date >= start && date <= now) {
+        const dayIndex = date.getDay();
+        byDay.set(dayIndex, (byDay.get(dayIndex) || 0) + 1);
+      }
+    });
+
+    return weekdayLabels.map((label, index) => ({
+      label,
+      calls: byDay.get(index) || 0,
+    }));
+  }
+
+  if (timespan === 'month') {
+    const start = new Date(now);
+    start.setDate(now.getDate() - 29);
+    const byWeek = new Map<number, number>();
+
+    callLogs.forEach((log) => {
+      const date = new Date(log.calledTime);
+      if (date >= start && date <= now) {
+        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        const weekIndex = Math.floor(diffDays / 7);
+        byWeek.set(weekIndex, (byWeek.get(weekIndex) || 0) + 1);
+      }
+    });
+
+    const labels = ['Week 4', 'Week 3', 'Week 2', 'Week 1'];
+    return labels.map((label, idx) => {
+      const weekIndexFromNow = 3 - idx;
+      return {
+        label,
+        calls: byWeek.get(weekIndexFromNow) || 0,
+      };
+    });
+  }
+
+  if (timespan === 'year') {
+    const start = new Date(now);
+    start.setFullYear(now.getFullYear() - 1);
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const byMonth = new Map<number, number>();
+
+    callLogs.forEach((log) => {
+      const date = new Date(log.calledTime);
+      if (date >= start && date <= now) {
+        const monthIndex = date.getMonth();
+        byMonth.set(monthIndex, (byMonth.get(monthIndex) || 0) + 1);
+      }
+    });
+
+    return monthLabels.map((label, index) => ({
+      label,
+      calls: byMonth.get(index) || 0,
+    }));
+  }
+
+  // 'all' timespan – group by year
+  const byYear = new Map<number, number>();
+  callLogs.forEach((log) => {
+    const date = new Date(log.calledTime);
+    const year = date.getFullYear();
+    byYear.set(year, (byYear.get(year) || 0) + 1);
+  });
+
+  return Array.from(byYear.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([year, calls]) => ({
+      label: `Y${year.toString().slice(-2)}`,
+      calls,
+    }));
+}
+
 export default function SalespersonStatisticsPage() {
   const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
+  const { token } = useAuth();
   const salespersonName = name || 'Salesperson';
   const [selectedTimespan, setSelectedTimespan] = useState<TimeSpan>('month');
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const getStatistics = (timespan: TimeSpan): StatisticCard[] => {
-    const dataByTimespan = {
-      today: [
-        { label: 'Total Calls', value: 12, icon: 'phone.fill' },
-        { label: 'Connected Calls', value: 8, icon: 'checkmark.circle.fill' },
-        { label: 'Missed Calls', value: 4, icon: 'phone.arrow.up.right.fill' },
-        { label: 'Visits Done', value: 3, icon: 'mappin.fill' },
-        { label: 'Loans Converted', value: 1, icon: 'chart.line.uptrend.xyaxis.fill' },
-        { label: 'Distance Traveled', value: '45 km', icon: 'location.fill' },
-      ],
-      week: [
-        { label: 'Total Calls', value: 68, icon: 'phone.fill' },
-        { label: 'Connected Calls', value: 52, icon: 'checkmark.circle.fill' },
-        { label: 'Missed Calls', value: 16, icon: 'phone.arrow.up.right.fill' },
-        { label: 'Visits Done', value: 14, icon: 'mappin.fill' },
-        { label: 'Loans Converted', value: 4, icon: 'chart.line.uptrend.xyaxis.fill' },
-        { label: 'Distance Traveled', value: '287 km', icon: 'location.fill' },
-      ],
-      month: [
-        { label: 'Total Calls', value: 286, icon: 'phone.fill' },
-        { label: 'Connected Calls', value: 214, icon: 'checkmark.circle.fill' },
-        { label: 'Missed Calls', value: 72, icon: 'phone.arrow.up.right.fill' },
-        { label: 'Visits Done', value: 52, icon: 'mappin.fill' },
-        { label: 'Loans Converted', value: 18, icon: 'chart.line.uptrend.xyaxis.fill' },
-        { label: 'Distance Traveled', value: '1,240 km', icon: 'location.fill' },
-      ],
-      year: [
-        { label: 'Total Calls', value: 3224, icon: 'phone.fill' },
-        { label: 'Connected Calls', value: 2418, icon: 'checkmark.circle.fill' },
-        { label: 'Missed Calls', value: 806, icon: 'phone.arrow.up.right.fill' },
-        { label: 'Visits Done', value: 612, icon: 'mappin.fill' },
-        { label: 'Loans Converted', value: 218, icon: 'chart.line.uptrend.xyaxis.fill' },
-        { label: 'Distance Traveled', value: '14,800 km', icon: 'location.fill' },
-      ],
-      all: [
-        { label: 'Total Calls', value: 8956, icon: 'phone.fill' },
-        { label: 'Connected Calls', value: 6718, icon: 'checkmark.circle.fill' },
-        { label: 'Missed Calls', value: 2238, icon: 'phone.arrow.up.right.fill' },
-        { label: 'Visits Done', value: 1842, icon: 'mappin.fill' },
-        { label: 'Loans Converted', value: 612, icon: 'chart.line.uptrend.xyaxis.fill' },
-        { label: 'Distance Traveled', value: '42,150 km', icon: 'location.fill' },
-      ],
+  useEffect(() => {
+    if (!token || !id) {
+      setIsLoading(false);
+      setErrorMessage('Missing authentication or salesperson id.');
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function loadData() {
+      try {
+        const [statsResponse, callLogsResponse] = await Promise.all([
+          getStatistics(id as string, token as string),
+          getCallLogs(id as string, token as string),
+        ]);
+
+        if (isCancelled) return;
+        setStatistics(statsResponse as Statistics);
+        setCallLogs(callLogsResponse as CallLog[]);
+      } catch (error) {
+        console.error('Error loading salesperson statistics:', error);
+        if (!isCancelled) {
+          setErrorMessage('Failed to load statistics. Please try again.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadData();
+
+    return () => {
+      isCancelled = true;
     };
-    return dataByTimespan[timespan];
+  }, [id, token]);
+
+  const safeStatistics: Statistics = statistics || {
+    totalCalls: 0,
+    hotLeads: 0,
+    warmLeads: 0,
+    coldLeads: 0,
+    totalMeets: 0,
   };
 
-  const getChartData = (timespan: TimeSpan) => {
-    const chartDataByTimespan = {
-      today: [
-        { label: '12:00', calls: 2 },
-        { label: '1:00', calls: 3 },
-        { label: '2:00', calls: 1 },
-        { label: '3:00', calls: 2 },
-        { label: '4:00', calls: 4 },
-      ],
-      week: [
-        { label: 'Mon', calls: 12 },
-        { label: 'Tue', calls: 14 },
-        { label: 'Wed', calls: 10 },
-        { label: 'Thu', calls: 16 },
-        { label: 'Fri', calls: 11 },
-        { label: 'Sat', calls: 8 },
-        { label: 'Sun', calls: 7 },
-      ],
-      month: [
-        { label: 'Week 1', calls: 68 },
-        { label: 'Week 2', calls: 74 },
-        { label: 'Week 3', calls: 62 },
-        { label: 'Week 4', calls: 82 },
-      ],
-      year: [
-        { label: 'Jan', calls: 258 },
-        { label: 'Feb', calls: 276 },
-        { label: 'Mar', calls: 242 },
-        { label: 'Apr', calls: 312 },
-        { label: 'May', calls: 288 },
-        { label: 'Jun', calls: 296 },
-        { label: 'Jul', calls: 334 },
-        { label: 'Aug', calls: 312 },
-        { label: 'Sep', calls: 276 },
-        { label: 'Oct', calls: 298 },
-        { label: 'Nov', calls: 288 },
-        { label: 'Dec', calls: 264 },
-      ],
-      all: [
-        { label: 'Y1', calls: 2842 },
-        { label: 'Y2', calls: 5000 },
-        { label: 'Y3', calls: 2990 },
-      ],
-    };
-    return chartDataByTimespan[timespan];
-  };
+  const statisticCards: StatisticCard[] = [
+    { label: 'Total Calls', value: safeStatistics.totalCalls, icon: 'phone.fill' },
+    { label: 'Total Meets', value: safeStatistics.totalMeets ?? 0, icon: 'mappin.fill' },
+    { label: 'Hot Leads', value: safeStatistics.hotLeads, icon: 'flame.fill' },
+    { label: 'Warm Leads', value: safeStatistics.warmLeads, icon: 'sun.max.fill' },
+    { label: 'Cold Leads', value: safeStatistics.coldLeads, icon: 'snowflake' },
+    {
+      label: 'Total Leads',
+      value:
+        (safeStatistics.hotLeads || 0) +
+        (safeStatistics.warmLeads || 0) +
+        (safeStatistics.coldLeads || 0),
+      icon: 'chart.bar.fill',
+    },
+  ];
 
-  const statistics = getStatistics(selectedTimespan);
-  const chartData = getChartData(selectedTimespan);
-  const maxCalls = Math.max(...chartData.map((d) => d.calls), 1);
+  const chartData = buildChartData(selectedTimespan, callLogs);
+  const maxCalls = chartData.length ? Math.max(...chartData.map((d) => d.calls), 1) : 1;
 
   const timespanOptions: { value: TimeSpan; label: string }[] = [
     { value: 'today', label: 'Today' },
@@ -139,37 +223,47 @@ export default function SalespersonStatisticsPage() {
   };
 
   const getPerformanceMetric = (metric: string) => {
-    const metrics: Record<string, Record<TimeSpan, string>> = {
-      connectionRate: {
-        today: '67%',
-        week: '76%',
-        month: '75%',
-        year: '75%',
-        all: '75%',
-      },
-      conversionRate: {
-        today: '8%',
-        week: '6%',
-        month: '6%',
-        year: '7%',
-        all: '7%',
-      },
-      avgCallsPerVisit: {
-        today: '4.0',
-        week: '4.9',
-        month: '5.5',
-        year: '5.3',
-        all: '4.9',
-      },
-      efficiencyScore: {
-        today: '82%',
-        week: '84%',
-        month: '87%',
-        year: '85%',
-        all: '86%',
-      },
-    };
-    return metrics[metric]?.[selectedTimespan] || '0%';
+    const totalLeads =
+      (safeStatistics.hotLeads || 0) +
+      (safeStatistics.warmLeads || 0) +
+      (safeStatistics.coldLeads || 0);
+
+    const totalCallsMade = callLogs.length || safeStatistics.totalCalls || 0;
+    const connectedCalls = callLogs.filter(
+      (log) => log.status.toLowerCase() === 'connected'
+    ).length;
+
+    const connectionRate =
+      totalCallsMade > 0 ? (connectedCalls / totalCallsMade) * 100 : 0;
+
+    const conversionRate =
+      totalLeads > 0 ? (safeStatistics.hotLeads / totalLeads) * 100 : 0;
+
+    const totalMeets = safeStatistics.totalMeets ?? 0;
+    const avgCallsPerVisit =
+      totalMeets > 0 ? safeStatistics.totalCalls / totalMeets : 0;
+
+    // Simple combined efficiency score based on connection and conversion rates
+    const efficiencyScore =
+      connectionRate === 0 && conversionRate === 0
+        ? 0
+        : connectionRate * 0.6 + conversionRate * 0.4;
+
+    const formatPercent = (value: number, fractionDigits = 0) =>
+      `${value.toFixed(fractionDigits)}%`;
+
+    switch (metric) {
+      case 'connectionRate':
+        return formatPercent(connectionRate, 0);
+      case 'conversionRate':
+        return formatPercent(conversionRate, 0);
+      case 'avgCallsPerVisit':
+        return avgCallsPerVisit.toFixed(1);
+      case 'efficiencyScore':
+        return formatPercent(efficiencyScore, 0);
+      default:
+        return '0';
+    }
   };
 
   return (
@@ -232,7 +326,7 @@ export default function SalespersonStatisticsPage() {
 
         {/* Statistics Cards Grid - 2 columns */}
         <View style={styles.statsGrid}>
-          {statistics.map((stat, index) => (
+          {statisticCards.map((stat, index) => (
             <View key={index} style={styles.statCard}>
               <View style={styles.statIconContainer}>
                 <IconSymbol name={stat.icon as any} size={24} color="#0a7ea4" />
@@ -253,23 +347,33 @@ export default function SalespersonStatisticsPage() {
 
           {/* Bar Chart */}
           <View style={styles.chart}>
-            {chartData.map((data, index) => (
-              <View key={index} style={styles.barContainer}>
-                <View style={styles.barWrapper}>
-                  <View
-                    style={[
-                      styles.bar,
-                      {
-                        height: `${maxCalls > 0 ? (data.calls / maxCalls) * 100 : 0}%`,
-                        minHeight: data.calls > 0 ? 20 : 2,
-                      },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.barLabel}>{data.label}</Text>
-                <Text style={styles.barValue}>{data.calls}</Text>
+            {chartData.length > 0 ? (
+              chartData.map((data, index) => {
+                const relativeHeight = maxCalls > 0 ? (data.calls / maxCalls) * 160 : 0;
+                const barHeight = Math.max(relativeHeight, data.calls > 0 ? 20 : 2);
+
+                return (
+                  <View key={index} style={styles.barContainer}>
+                    <View style={styles.barWrapper}>
+                      <View
+                        style={[
+                          styles.bar,
+                          {
+                            height: barHeight,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.barLabel}>{data.label}</Text>
+                    <Text style={styles.barValue}>{data.calls}</Text>
+                  </View>
+                );
+              })
+            ) : (
+              <View style={styles.barContainer}>
+                <Text style={styles.barLabel}>No call data</Text>
               </View>
-            ))}
+            )}
           </View>
         </View>
 

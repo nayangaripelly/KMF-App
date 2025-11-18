@@ -20,7 +20,7 @@ export default function TabLayout() {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: '#E0E0E0',
-          height: 60,
+          height: 70,
           paddingBottom: 8,
           paddingTop: 8,
         },
@@ -36,7 +36,7 @@ export default function TabLayout() {
               color={focused ? '#0a7ea4' : color}
             />
           ),
-          tabBarLabel: '✅ Work',
+          tabBarLabel: 'Work',
         }}
       />
       <Tabs.Screen
@@ -50,7 +50,7 @@ export default function TabLayout() {
               color={focused ? '#0a7ea4' : '#FF69B4'}
             />
           ),
-          tabBarLabel: '📋 Status',
+          tabBarLabel: 'Status',
         }}
       />
       <Tabs.Screen
@@ -64,7 +64,7 @@ export default function TabLayout() {
               color={focused ? '#0a7ea4' : '#FF69B4'}
             />
           ),
-          tabBarLabel: '📞 Callogs',
+          tabBarLabel: 'Callogs',
         }}
       />
       <Tabs.Screen
@@ -78,7 +78,7 @@ export default function TabLayout() {
               color={focused ? '#0a7ea4' : '#34C759'}
             />
           ),
-          tabBarLabel: '📊 Statistics',
+          tabBarLabel: 'Statistics',
         }}
       />
     </Tabs>
