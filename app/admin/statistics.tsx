@@ -42,7 +42,7 @@ export default function StatisticsPage() {
       );
       const data = await response.json();
       console.log(data);
-      setSalespersons(data.salespersons);
+      setSalespersons(data.salespersons != null? data.salespersons : []);
     };
     fetchSalespersons();
   }, []);

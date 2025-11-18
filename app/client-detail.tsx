@@ -1,24 +1,23 @@
-import { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  Platform,
-  Linking,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useAuth } from '@/contexts/AuthContext';
-import { getClients, createLead, createCallLog, type Client } from '@/services/api';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { createCallLog, createLead, getClients, type Client } from '@/services/api';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -202,7 +201,7 @@ export default function ClientDetailScreen() {
           style={[
             styles.infoCard,
             {
-              backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#FFFFFF',
+              backgroundColor: '#FFFFFF',
               ...(Platform.OS === 'web'
                 ? { boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)' }
                 : {
@@ -250,8 +249,6 @@ export default function ClientDetailScreen() {
                     backgroundColor:
                       loanType === type
                         ? '#0a7ea4'
-                        : colorScheme === 'dark'
-                          ? '#2A2A2A'
                           : '#F5F5F5',
                     borderColor: loanType === type ? '#0a7ea4' : '#E0E0E0',
                   },
@@ -294,9 +291,7 @@ export default function ClientDetailScreen() {
                       backgroundColor:
                         loanStatus === status
                           ? statusColors[status]
-                          : colorScheme === 'dark'
-                            ? '#2A2A2A'
-                            : statusBgColors[status],
+                          : statusBgColors[status],
                       borderColor: loanStatus === status ? statusColors[status] : '#E0E0E0',
                     },
                   ]}
@@ -321,9 +316,9 @@ export default function ClientDetailScreen() {
             style={[
               styles.notesInput,
               {
-                backgroundColor: colorScheme === 'dark' ? '#2A2A2A' : '#F5F5F5',
+                backgroundColor: '#F5F5F5',
                 color: textColor,
-                borderColor: colorScheme === 'dark' ? '#3A3A3A' : '#E0E0E0',
+                borderColor: '#E0E0E0',
               },
             ]}
             placeholder="Add any notes about this client..."

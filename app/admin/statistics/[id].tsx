@@ -1,16 +1,16 @@
+import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Platform,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
 
 type TimeSpan = 'today' | 'week' | 'month' | 'year' | 'all';
 
@@ -111,7 +111,7 @@ export default function SalespersonStatisticsPage() {
       ],
       all: [
         { label: 'Y1', calls: 2842 },
-        { label: 'Y2', calls: 3124 },
+        { label: 'Y2', calls: 5000 },
         { label: 'Y3', calls: 2990 },
       ],
     };
