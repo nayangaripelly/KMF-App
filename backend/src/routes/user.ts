@@ -232,4 +232,24 @@ userRouter.get("/salespersons",verifyToken, async function(req :AuthRequest, res
         });
     }
 });
+
+userRouter.get("/fieldpersons", verifyToken, async function(req: AuthRequest, res: Response) {
+    const userId = req.userId;
+    if (!userId) {
+        return res.status(401).json({ msg: 'User ID not found' });
+    }
+    try {
+        const fieldpersons = await userModel.find({ role: "fieldperson" });
+        res.status(200).json({
+            success: true,
+            fieldpersons
+        });
+    } catch (e) {
+        console.error('Error fetching fieldpersons:', e);
+        res.status(500).json({
+            success: false,
+            msg: "Something went wrong. Please try again."
+        });
+    }
+});
 export default userRouter;

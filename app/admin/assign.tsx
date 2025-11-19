@@ -23,6 +23,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as XLSX from 'xlsx';
+// dotenv.config();
+// const API_URL="http://192.168.217.146:3003";
+const API_URL="http://192.168.137.41:3003";
+// const API_URL="http://localhost:3003";
 
 interface Client {
   id: string;
@@ -31,12 +35,14 @@ interface Client {
   location: string;
 }
 
+type UserRole = 'salesperson' | 'fieldperson' | 'admin';
+
 interface Salesperson {
   _id: string;
   username: string;
   emailId: string;
   passwordhash: string;
-  role: string;
+  role: UserRole;
   createdAt: string;
 }
 
@@ -198,6 +204,7 @@ export default function AssignWorkPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
+  const [fieldpersons, setFieldpersons] = useState<Salesperson[]>([]);
   const [clientsPendingAssignment, setClientsPendingAssignment] = useState<Client[]>([]);
   const [isAssignModalVisible, setIsAssignModalVisible] = useState(false);
   const [selectedClientIds, setSelectedClientIds] = useState<string[]>([]);
@@ -217,7 +224,7 @@ export default function AssignWorkPage() {
     const fetchSalespersons = async () => {
       try {
         console.log("Fetching salespersons...");
-        const response = await fetch("http://192.168.137.231:3003/api/v1/users/salespersons", {
+        const response = await fetch(`${API_URL}/api/v1/users/salespersons`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -240,6 +247,30 @@ export default function AssignWorkPage() {
     };
   
     fetchSalespersons();
+  }, [token]);
+
+  useEffect(() => {
+    const fetchFieldpersons = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/users/fieldpersons`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        if (data.success && Array.isArray(data.fieldpersons)) {
+          setFieldpersons(data.fieldpersons);
+        } else {
+          setFieldpersons([]);
+        }
+      } catch (error) {
+        console.error('Error fetching field persons:', error);
+        setFieldpersons([]);
+      }
+    };
+
+    fetchFieldpersons();
   }, [token]);
   
 
@@ -369,7 +400,11 @@ export default function AssignWorkPage() {
     setShowCreateForm(false);
   };
 
-  const handleAssignClients = async (salesperson: Salesperson, clientsToAssign: Client[]) => {
+  const handleAssignClients = async (
+    assignee: Salesperson,
+    role: 'salesperson' | 'fieldperson',
+    clientsToAssign: Client[]
+  ) => {
     if (!clientsToAssign.length || !token) {
       return;
     }
@@ -379,7 +414,7 @@ export default function AssignWorkPage() {
     try {
       const assignmentResults = await Promise.allSettled(
         clientsToAssign.map(async (client) => {
-          const response = await fetch('http://192.168.137.231:3003/api/v1/clients', {
+          const response = await fetch(`${API_URL}/api/v1/clients`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${token}`,
@@ -389,7 +424,10 @@ export default function AssignWorkPage() {
               name: client.name,
               phone: client.phone,
               location: client.location,
-              salespersonId: salesperson._id,
+              salespersonId: role === 'salesperson' ? assignee._id : undefined,
+              fieldPersonId: role === 'fieldperson' ? assignee._id : undefined,
+              assignedUserId: assignee._id,
+              assignedRole: role,
             }),
           });
 
@@ -423,7 +461,7 @@ export default function AssignWorkPage() {
       } else {
         Alert.alert(
           'Assignment complete',
-          `${successfulClients.length} client(s) assigned to ${salesperson.username}.`
+          `${successfulClients.length} client(s) assigned to ${assignee.username}.`
         );
       }
     } catch (error) {
@@ -599,7 +637,10 @@ export default function AssignWorkPage() {
         clients={clientsPendingAssignment}
         salespersons={salespersons}
         onClose={closeAssignModal}
-        onAssign={(salesperson, modalClients) => handleAssignClients(salesperson, modalClients)}
+        onAssign={(assignee, role, modalClients) =>
+          handleAssignClients(assignee, role, modalClients)
+        }
+        fieldpersons={fieldpersons}
       />
     </SafeAreaView>
   );

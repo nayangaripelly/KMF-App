@@ -12,9 +12,12 @@ const getApiBaseUrl = (): string => {
   // Default to localhost for development
   // Change this to your computer's IP address if testing on physical device
   // return 'http://localhost:3003/api/v1';
-  return 'http://192.168.137.231:3003/api/v1'
+  return `${API_URL}/api/v1`
 };
-
+// dotenv.config();
+// const API_URL="http://192.168.217.146:3003";
+// const API_URL="http://localhost:3003";
+const API_URL="http://192.168.137.41:3003";
 const API_BASE_URL = getApiBaseUrl();
 
 interface LoginResponse {
@@ -139,6 +142,27 @@ export interface CallLog {
   note?: string;
 }
 
+export type MeetStatus = 'met' | 'notmet' | 'meetagain';
+
+export interface MeetLog {
+  _id: string;
+  fieldPersonId: {
+    _id: string;
+    username: string;
+    emailId: string;
+  };
+  clientId: {
+    _id: string;
+    name: string;
+    phoneNo: string;
+    location?: string;
+  };
+  meetStatus: MeetStatus;
+  distanceTravelled?: number;
+  timestamp: string;
+  notes?: string;
+}
+
 export interface Statistics {
   totalCalls: number;
   hotLeads: number;
@@ -146,6 +170,7 @@ export interface Statistics {
   coldLeads: number;
   // Optional fields to stay in sync with backend while remaining backwards compatible
   totalMeets?: number;
+  meetStatusCounts?: Record<MeetStatus, number>;
 }
 
 async function fetchWithAuth(url: string, token: string, options: RequestInit = {}) {
@@ -259,6 +284,73 @@ export async function createCallLog(
   } catch (error) {
     console.error('[API] Error creating call log:', error);
     throw error;
+  }
+}
+
+export async function getMeetLogs(fieldPersonId: string, token: string): Promise<MeetLog[]> {
+  try {
+    console.log(`[API] Fetching meet logs for field person: ${fieldPersonId}`);
+    const data = await fetchWithAuth(
+      `${API_BASE_URL}/fieldperson/meetlogs?fieldPersonId=${fieldPersonId}`,
+      token
+    );
+    const meetLogs = data.data || data || [];
+    console.log(`[API] Found ${meetLogs.length} meet logs`);
+    return meetLogs;
+  } catch (error) {
+    console.error('[API] Error fetching meet logs:', error);
+    throw error;
+  }
+}
+
+export async function createMeetLog(
+  meetLogData: {
+    clientId: string;
+    fieldPersonId: string;
+    meetStatus: MeetStatus;
+    distanceTravelled?: number;
+    timestamp?: string;
+    notes?: string;
+  },
+  token: string
+): Promise<MeetLog> {
+  try {
+    console.log('[API] Creating meet log:', meetLogData);
+    const data = await fetchWithAuth(`${API_BASE_URL}/fieldperson/meetlogs`, token, {
+      method: 'POST',
+      body: JSON.stringify(meetLogData),
+    });
+    console.log('[API] Meet log created successfully:', data);
+    return data.data || data;
+  } catch (error) {
+    console.error('[API] Error creating meet log:', error);
+    throw error;
+  }
+}
+
+export interface MeetStatistics {
+  totalMeets: number;
+  meetStatusCounts: Record<MeetStatus, number>;
+}
+
+export async function getMeetStatistics(fieldPersonId: string, token: string): Promise<MeetStatistics> {
+  try {
+    console.log(`[API] Fetching meet statistics for field person: ${fieldPersonId}`);
+    const data = await fetchWithAuth(
+      `${API_BASE_URL}/fieldperson/meetlogs/statistics?fieldPersonId=${fieldPersonId}`,
+      token
+    );
+    const stats = data.data || data;
+    return {
+      totalMeets: stats.totalMeets ?? 0,
+      meetStatusCounts: stats.meetStatusCounts ?? { met: 0, notmet: 0, meetagain: 0 },
+    };
+  } catch (error) {
+    console.error('[API] Error fetching meet statistics:', error);
+    return {
+      totalMeets: 0,
+      meetStatusCounts: { met: 0, notmet: 0, meetagain: 0 },
+    };
   }
 }
 

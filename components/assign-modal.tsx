@@ -22,22 +22,26 @@ interface Salesperson {
   username: string;
   emailId: string;
   passwordhash: string;
-  role: string;
+  role: 'salesperson' | 'fieldperson' | 'admin';
   createdAt: string;
 }
+
+type AssignmentRole = 'salesperson' | 'fieldperson';
 
 interface AssignModalProps {
   visible: boolean;
   clients: Client[];
   salespersons: Salesperson[];
+  fieldpersons: Salesperson[];
   onClose: () => void;
-  onAssign: (salesperson: Salesperson, clients: Client[]) => void;
+  onAssign: (assignee: Salesperson, role: AssignmentRole, clients: Client[]) => void;
 }
 
 export default function AssignModal({
   visible,
   clients,
   salespersons,
+  fieldpersons,
   onClose,
   onAssign,
 }: AssignModalProps) {
@@ -46,8 +50,18 @@ export default function AssignModal({
   const isSingleClient = clients.length === 1;
   const primaryClient = clients[0];
 
-  const handleAssign = (salesperson: Salesperson) => {
-    onAssign(salesperson, clients);
+  const [activeRole, setActiveRole] = React.useState<AssignmentRole>('salesperson');
+
+  React.useEffect(() => {
+    if (!visible) {
+      setActiveRole('salesperson');
+    }
+  }, [visible]);
+
+  const currentAssignees = activeRole === 'salesperson' ? salespersons : fieldpersons;
+
+  const handleAssign = (assignee: Salesperson) => {
+    onAssign(assignee, activeRole, clients);
     onClose();
   };
 
@@ -100,18 +114,52 @@ export default function AssignModal({
             )}
           </View>
 
-          <Text style={styles.sectionTitle}>Select Salesperson</Text>
+          <Text style={styles.sectionTitle}>Assign To</Text>
 
-          <ScrollView style={styles.salespersonList} showsVerticalScrollIndicator={false}>
-            {salespersons.map((salesperson) => (
+          <View style={styles.roleToggleContainer}>
+            {(['salesperson', 'fieldperson'] as AssignmentRole[]).map((role) => (
               <TouchableOpacity
-                key={salesperson._id}
-                style={styles.salespersonItem}
-                onPress={() => handleAssign(salesperson)}
-                activeOpacity={0.7}>
-                <Text style={styles.salespersonName}>{salesperson.username}</Text>
+                key={role}
+                style={[
+                  styles.roleToggle,
+                  activeRole === role && styles.roleToggleActive,
+                ]}
+                onPress={() => setActiveRole(role)}>
+                <Text
+                  style={[
+                    styles.roleToggleText,
+                    activeRole === role && styles.roleToggleTextActive,
+                  ]}>
+                  {role === 'salesperson' ? 'Salesperson' : 'Field Person'}
+                </Text>
               </TouchableOpacity>
             ))}
+          </View>
+
+          <Text style={styles.sectionTitle}>
+            {activeRole === 'salesperson' ? 'Select Salesperson' : 'Select Field Person'}
+          </Text>
+
+          <ScrollView style={styles.salespersonList} showsVerticalScrollIndicator={false}>
+            {currentAssignees.length === 0 ? (
+              <View style={styles.emptyAssignee}>
+                <Text style={styles.emptyAssigneeText}>
+                  {activeRole === 'salesperson'
+                    ? 'No salespersons available.'
+                    : 'No field persons available.'}
+                </Text>
+              </View>
+            ) : (
+              currentAssignees.map((assignee) => (
+                <TouchableOpacity
+                  key={assignee._id}
+                  style={styles.salespersonItem}
+                  onPress={() => handleAssign(assignee)}
+                  activeOpacity={0.7}>
+                  <Text style={styles.salespersonName}>{assignee.username}</Text>
+                </TouchableOpacity>
+              ))
+            )}
           </ScrollView>
 
           <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
@@ -136,7 +184,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 400,
-    maxHeight: '80%',
+    maxHeight: '100%',
     padding: 24,
     ...(Platform.OS === 'web'
       ? {
@@ -214,6 +262,32 @@ const styles = StyleSheet.create({
     color: '#1E3A5F',
     marginBottom: 12,
   },
+  roleToggleContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  roleToggle: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  roleToggleActive: {
+    borderColor: '#0a7ea4',
+    backgroundColor: '#E3F2FD',
+  },
+  roleToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  roleToggleTextActive: {
+    color: '#0a7ea4',
+  },
   salespersonList: {
     maxHeight: 200,
     marginBottom: 24,
@@ -230,6 +304,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1E3A5F',
+  },
+  emptyAssignee: {
+    padding: 16,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#E0E0E0',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  emptyAssigneeText: {
+    color: '#6B7280',
+    fontSize: 14,
   },
   cancelButton: {
     height: 48,

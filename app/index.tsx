@@ -27,8 +27,11 @@ export default function Index() {
       if (segments[0] !== 'admin') {
         router.replace('/admin/assign');
       }
-    } else if (role === 'salesperson' || role === 'fieldperson') {
-      // Check if already on tabs route
+    } else if (role === 'fieldperson') {
+      if (segments[0] !== 'fieldperson') {
+        router.replace('/fieldperson/(tabs)/work');
+      }
+    } else if (role === 'salesperson') {
       if (segments[0] !== '(tabs)') {
         router.replace('/(tabs)/work');
       }

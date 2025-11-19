@@ -44,20 +44,37 @@ export const getClientsByUserId = async (req: Request, res: Response): Promise<v
 };
 
 export const createClient = async (req:Request, res:Response) :Promise<void> => {
-  const {name,phone,location,salespersonId} = req.body;
+  const {name,phone,location,salespersonId, fieldPersonId, assignedUserId, assignedRole} = req.body;
   console.log(req.body);
   try 
   {
+    const assigneeId = assignedUserId || fieldPersonId || salespersonId;
+    if (!assigneeId) {
+      res.status(400).json({
+        success: false,
+        msg: 'Missing assignee id',
+      });
+      return;
+    }
+
+    const normalizedRole = assignedRole
+      ? assignedRole
+      : fieldPersonId
+      ? 'fieldperson'
+      : 'salesperson';
+
     const response = await clientModel.create({
       name,
       phoneNo:phone,
       location,
       createdAt: Date.now().toString(),
-      assignedTo: salespersonId
+      assignedTo: assigneeId,
+      assignedRole: normalizedRole
     })
     res.status(200).json({
       msg:"sucessfully added a new client",
-      success:true
+      success:true,
+      data: response
     })
   }catch(e)
   {

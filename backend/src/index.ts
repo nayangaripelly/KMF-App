@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import calllogRouter from "./routes/calllog.js";
 import clientRouter from "./routes/client.js";
 import leadRouter from "./routes/lead.js";
+import meetlogRouter from "./routes/meetlog.js";
 import statisticsRouter from "./routes/statistics.js";
 import userRouter from "./routes/user.js";
 
@@ -27,6 +28,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/leads", leadRouter);
 app.use("/api/v1/clients", clientRouter);
 app.use("/api/v1/calllogs", calllogRouter);
+app.use("/api/v1/fieldperson/meetlogs", meetlogRouter);
 app.use("/api/v1/statistics", statisticsRouter);
 
 const mongourl = process.env.MONGODB_URL as string;
@@ -44,6 +46,10 @@ async function main()
         console.log('  - POST /api/v1/leads');
         console.log('  - GET  /api/v1/calllogs/:userId');
         console.log('  - POST /api/v1/calllogs');
+        console.log('  - POST /api/v1/fieldperson/meetlogs');
+        console.log('  - GET  /api/v1/fieldperson/meetlogs');
+        console.log('  - GET  /api/v1/fieldperson/meetlogs/:id');
+        console.log('  - GET  /api/v1/fieldperson/meetlogs/statistics?fieldPersonId=');
         console.log('  - GET  /api/v1/statistics/:userId');
     });
 }

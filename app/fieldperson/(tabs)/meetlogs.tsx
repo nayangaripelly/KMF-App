@@ -1,10 +1,8 @@
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useAuth } from '@/contexts/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { getCallLogs, type CallLog } from '@/services/api';
+import { getMeetLogs, type MeetLog } from '@/services/api';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -19,41 +17,51 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function CallLogsScreen() {
+const statusStyles: Record<
+  MeetLog['meetStatus'],
+  { label: string; color: string; bg: string; icon: string }
+> = {
+  met: { label: 'Met', color: '#34C759', bg: '#E8F5E9', icon: 'person.crop.circle.badge.checkmark' },
+  notmet: { label: 'Not Met', color: '#FF3B30', bg: '#FFEBEE', icon: 'person.crop.circle.badge.xmark' },
+  meetagain: {
+    label: 'Meet Again',
+    color: '#FF9500',
+    bg: '#FFF3E0',
+    icon: 'arrow.triangle.2.circlepath.circle',
+  },
+};
+
+export default function FieldPersonMeetLogsScreen() {
   const { user, token } = useAuth();
-  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
+  const [meetLogs, setMeetLogs] = useState<MeetLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const colorScheme = useColorScheme() ?? 'light';
   const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
 
   useEffect(() => {
     if (user?.id && token) {
-      loadCallLogs();
+      loadMeetLogs();
     }
   }, [user?.id, token]);
 
-  // Refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      console.log('[CALL LOGS PAGE] Screen focused, refreshing call logs...');
       if (user?.id && token) {
-        loadCallLogs();
+        loadMeetLogs();
       }
     }, [user?.id, token])
   );
 
-  const loadCallLogs = async () => {
+  const loadMeetLogs = async () => {
     if (!user?.id || !token) return;
-
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const data = await getCallLogs(user.id, token);
-      setCallLogs(data);
+      const data = await getMeetLogs(user.id, token);
+      setMeetLogs(data);
     } catch (error) {
-      console.error('Error loading call logs:', error);
+      console.error('[MEET LOGS] Error fetching meet logs:', error);
+      setMeetLogs([]);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -62,100 +70,35 @@ export default function CallLogsScreen() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadCallLogs();
+    loadMeetLogs();
   };
 
-  const filteredCallLogs = useMemo(() => {
-    if (!searchQuery.trim()) return callLogs;
-
-    return callLogs.filter(
+  const filteredMeetLogs = useMemo(() => {
+    if (!searchQuery.trim()) return meetLogs;
+    return meetLogs.filter(
       (log) =>
         log.clientId.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.clientId.phoneNo.includes(searchQuery)
     );
-  }, [callLogs, searchQuery]);
+  }, [meetLogs, searchQuery]);
 
-  const getCallType = (log: CallLog): 'Incoming' | 'Outgoing' | 'Missed' => {
-    // Use callType from backend if available
-    if (log.callType) {
-      return log.callType.charAt(0).toUpperCase() + log.callType.slice(1) as 'Incoming' | 'Outgoing' | 'Missed';
-    }
-    // Fallback to status-based mapping
-    switch (log.status.toLowerCase()) {
-      case 'connected':
-        return 'Incoming';
-      case 'rejected':
-      case 'followup':
-        return 'Outgoing';
-      case 'missed':
-        return 'Missed';
-      default:
-        return 'Incoming';
-    }
-  };
-
-  const getCallTypeBadgeColor = (callType: string) => {
-    switch (callType) {
-      case 'Incoming':
-        return '#34C759';
-      case 'Outgoing':
-        return '#2196F3';
-      case 'Missed':
-        return '#FF3B30';
-      default:
-        return '#666';
-    }
-  };
-
-  const getCallIcon = (callType: string) => {
-    switch (callType) {
-      case 'Incoming':
-        return 'phone.fill';
-      case 'Outgoing':
-        return 'phone.arrow.up.right.fill';
-      case 'Missed':
-        return 'phone.down.fill';
-      default:
-        return 'phone.fill';
-    }
-  };
-
-  const formatDateTime = (dateString: string) => {
+  const formatTimeline = (dateString: string) => {
     const date = new Date(dateString);
-    const today = new Date();
-    const isToday =
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
-
-    if (isToday) {
-      return `Today at ${date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      })}`;
-    }
-
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
-    });
+    return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
   if (!user?.id || !token) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
-        <ThemedView style={styles.centerContainer}>
-          <ThemedText>Please log in to view call logs.</ThemedText>
-        </ThemedView>
+        <View style={styles.centerContainer}>
+          <ThemedText>Please log in to view meet logs.</ThemedText>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <View style={styles.logo}>
@@ -163,44 +106,31 @@ export default function CallLogsScreen() {
           </View>
         </View>
         <ThemedText type="title" style={styles.title}>
-          📞 Call Logs
+          📝 Meet Logs
         </ThemedText>
         <View style={styles.rightHeader}>
-          <TouchableOpacity
-            onPress={() => router.push('/profile')}
-            activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => router.push('/profile')} activeOpacity={0.7}>
             <View style={styles.avatar}>
-              <ThemedText style={styles.avatarText}>
-                {user.username?.[0]?.toUpperCase() || 'U'}
-              </ThemedText>
+              <ThemedText style={styles.avatarText}>{user.username?.[0]?.toUpperCase() || 'F'}</ThemedText>
             </View>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <View
-          style={[
-            styles.searchBar,
-            {
-              backgroundColor:  '#FFFFFF',
-              borderColor: '#E0E0E0',
-            },
-          ]}>
+        <View style={styles.searchBar}>
           <IconSymbol name="magnifyingglass" size={20} color="#9BA1A6" />
           <TextInput
-            style={[styles.searchInput, { color: textColor }]}
-            placeholder="Search by name or phone..."
+            style={styles.searchInput}
+            placeholder="Search by client name or phone..."
             placeholderTextColor="#9BA1A6"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-        <ThemedText style={styles.callCount}>Total calls: {filteredCallLogs.length}</ThemedText>
+        <ThemedText style={styles.meetCount}>Total meets: {filteredMeetLogs.length}</ThemedText>
       </View>
 
-      {/* Call Logs List */}
       <ScrollView
         style={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -209,22 +139,18 @@ export default function CallLogsScreen() {
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#0a7ea4" />
           </View>
-        ) : filteredCallLogs.length === 0 ? (
+        ) : filteredMeetLogs.length === 0 ? (
           <View style={styles.centerContainer}>
-            <ThemedText style={styles.emptyText}>No call logs found</ThemedText>
+            <ThemedText style={styles.emptyText}>No meet logs found</ThemedText>
           </View>
         ) : (
-          filteredCallLogs.map((log) => {
-            const callType = getCallType(log);
-            const badgeColor = getCallTypeBadgeColor(callType);
-            const iconName = getCallIcon(callType);
-            const iconColor = callType === 'Missed' ? '#FF3B30' : '#FF69B4';
-
+          filteredMeetLogs.map((log) => {
+            const meta = statusStyles[log.meetStatus];
             return (
               <View
                 key={log._id}
                 style={[
-                  styles.callLogCard,
+                  styles.meetLogCard,
                   {
                     backgroundColor: '#FFFFFF',
                     ...(Platform.OS === 'web'
@@ -238,18 +164,33 @@ export default function CallLogsScreen() {
                         }),
                   },
                 ]}>
-                <View style={styles.callLogContent}>
-                  <View style={styles.callLogLeft}>
-                    <IconSymbol name={iconName} size={24} color={iconColor} />
-                    <View style={styles.callLogInfo}>
+                <View style={styles.meetLogContent}>
+                  <View style={styles.meetLogLeft}>
+                    <View style={styles.meetLogInfo}>
                       <ThemedText type="defaultSemiBold" style={styles.clientName}>
                         {log.clientId.name}
                       </ThemedText>
-                      <ThemedText style={styles.phoneNumber}>{log.clientId.phoneNo}</ThemedText>
-                      <ThemedText style={styles.callTime}>{formatDateTime(log.calledTime)}</ThemedText>
+                      <ThemedText style={styles.clientPhone}>{log.clientId.phoneNo}</ThemedText>
+                      <ThemedText style={styles.meetTime}>{formatTimeline(log.timestamp)}</ThemedText>
                     </View>
                   </View>
+                  <View style={styles.meetLogRight}>
+                    <View style={[styles.meetTypeBadge, { backgroundColor: meta.bg }]}>
+                      <ThemedText style={[styles.meetTypeText, { color: meta.color }]}>{meta.label}</ThemedText>
+                    </View>
+                    {typeof log.distanceTravelled === 'number' && (
+                      <ThemedText style={styles.distance}>
+                        {log.distanceTravelled.toFixed(1)} km
+                      </ThemedText>
+                    )}
+                  </View>
                 </View>
+                {log.notes && (
+                  <View style={styles.notesContainer}>
+                    <ThemedText style={styles.notesLabel}>Notes</ThemedText>
+                    <ThemedText style={styles.notesText}>{log.notes}</ThemedText>
+                  </View>
+                )}
               </View>
             );
           })
@@ -325,6 +266,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 8,
     gap: 12,
+    borderColor: '#E0E0E0',
     ...(Platform.OS === 'web'
       ? { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)' }
       : {
@@ -339,7 +281,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
   },
-  callCount: {
+  meetCount: {
     fontSize: 14,
     color: '#0a7ea4',
     fontWeight: '600',
@@ -359,22 +301,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9BA1A6',
   },
-  callLogCard: {
+  meetLogCard: {
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
   },
-  callLogContent: {
+  meetLogContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  callLogLeft: {
+  meetLogLeft: {
     flexDirection: 'row',
     flex: 1,
     gap: 12,
   },
-  callLogInfo: {
+  meetLogInfo: {
     flex: 1,
   },
   clientName: {
@@ -383,33 +325,48 @@ const styles = StyleSheet.create({
     color: '#0a7ea4',
     marginBottom: 4,
   },
-  phoneNumber: {
+  clientPhone: {
     fontSize: 14,
     color: '#2196F3',
     marginBottom: 4,
   },
-  callTime: {
+  meetTime: {
     fontSize: 12,
     color: '#9BA1A6',
   },
-  callLogRight: {
+  meetLogRight: {
     alignItems: 'flex-end',
     gap: 8,
   },
-  callTypeBadge: {
+  meetTypeBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
-  callTypeText: {
+  meetTypeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#FFFFFF',
   },
-  duration: {
+  distance: {
     fontSize: 14,
     color: '#0a7ea4',
     fontWeight: '600',
+  },
+  notesContainer: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#F8F9FB',
+  },
+  notesLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0a7ea4',
+    marginBottom: 4,
+  },
+  notesText: {
+    fontSize: 14,
+    color: '#4A4A4A',
   },
 });
 

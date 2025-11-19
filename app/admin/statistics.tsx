@@ -14,6 +14,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+// dotenv.config();
+// const API_URL="http://192.168.217.146:3003";
+// const API_URL="http://localhost:3003";
+const API_URL="http://192.168.137.41:3003";
 
 interface Salesperson {
   _id: string;
@@ -28,10 +32,11 @@ export default function StatisticsPage() {
   const { user,token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
     const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
+    const [fieldpersons, setFieldpersons] = useState<Salesperson[]>([]);
 
   useEffect(() => {
     const fetchSalespersons = async () => {
-      const response = await fetch(`http://192.168.137.231:3003/api/v1/users/salespersons`,
+      const response = await fetch(`${API_URL}/api/v1/users/salespersons`,
         {
           method: "GET",
           headers: {
@@ -45,6 +50,22 @@ export default function StatisticsPage() {
       setSalespersons(data.salespersons != null? data.salespersons : []);
     };
     fetchSalespersons();
+  }, []);
+  useEffect(()=>{
+    const fetchfieldpersons = async () => {
+      const response = await fetch(`${API_URL}/api/v1/users/fieldpersons`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      setFieldpersons(data.fieldpersons != null? data.fieldpersons : []);
+    };
+    fetchfieldpersons();
   }, []);
   // const salespersons: Salesperson[] = [
   //   { id: 'sp1', name: 'Alex Johnson', contact: '+1 (555) 123-4567' },

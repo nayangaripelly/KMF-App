@@ -21,8 +21,28 @@ export const getStatisticsByUserId = async (req: Request, res: Response): Promis
       leadModel.countDocuments({ userId: userObjectId, loanStatus: 'cold' }).exec(),
     ]);
 
-    // counting total meets
-    const totalMeets = await meetlogModel.countDocuments({userId: userObjectId}).exec();
+    // counting total meets and by status for field personnel
+    const [totalMeets, meetStatusAggregation] = await Promise.all([
+      meetlogModel.countDocuments({ fieldPersonId: userObjectId }).exec(),
+      meetlogModel
+        .aggregate([
+          { $match: { fieldPersonId: userObjectId } },
+          { $group: { _id: '$meetStatus', count: { $sum: 1 } } },
+        ])
+        .exec(),
+    ]);
+
+    const meetStatusCounts = {
+      met: 0,
+      notmet: 0,
+      meetagain: 0,
+    };
+
+    meetStatusAggregation.forEach(({ _id, count }) => {
+      if (_id && meetStatusCounts.hasOwnProperty(_id)) {
+        meetStatusCounts[_id as keyof typeof meetStatusCounts] = count;
+      }
+    });
 
     const statistics = {
       totalCalls,
@@ -30,6 +50,7 @@ export const getStatisticsByUserId = async (req: Request, res: Response): Promis
       hotLeads,
       warmLeads,
       coldLeads,
+      meetStatusCounts,
     };
 
     console.log(`[GET /api/v1/statistics/${userId}] Statistics:`, statistics);

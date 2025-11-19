@@ -35,8 +35,10 @@ interface Leads {
   createdAt: string;
   updatedAt: string;
 }
-
-
+// dotenv.config();
+// const API_URL="http://192.168.217.146:3003";
+// const API_URL="http://localhost:3003";
+const API_URL="http://192.168.137.41:3003";
 export default function AdminStatusPage() {
   const { user,token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +50,7 @@ export default function AdminStatusPage() {
     const fetchAllLeads = async () => {
       try {
         console.log("fetching leads");
-        const response = await fetch('http://192.168.137.231:3003/api/v1/leads',
+        const response = await fetch(`${API_URL}/api/v1/leads`,
           {
             method:"GET",
             headers: {
@@ -59,7 +61,7 @@ export default function AdminStatusPage() {
         const data = await response.json();
         if(data.success)
         {
-          setAllLeads(data.leads)
+          setAllLeads(data.leads!=undefined && data.leads!=null ?data.leads:[]);
         }else
         {
           setAllLeads([]);
@@ -103,9 +105,9 @@ export default function AdminStatusPage() {
 
   const filteredClients = allLeads.filter((lead) => {
     const matchesSearch =
-      lead.clientId.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.clientId.phoneNo.includes(searchQuery);
-    const matchesStatus = selectedFilter === 'all' || lead.loanStatus === selectedFilter;
+      lead?.clientId?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead?.clientId?.phoneNo?.includes(searchQuery)||"";
+    const matchesStatus = selectedFilter === 'all' || lead?.loanStatus === selectedFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -208,30 +210,30 @@ export default function AdminStatusPage() {
                   <IconSymbol name="phone.fill" size={20} color="#0a7ea4" />
                   <View style={styles.clientInfo}>
                     <ThemedText type="defaultSemiBold" style={styles.clientName}>
-                      {lead.clientId.name}
+                      {lead?.clientId?.name}
                     </ThemedText>
-                    <Text style={styles.salespersonName}>{lead.userId.username}</Text>
+                    <Text style={styles.salespersonName}>{lead?.userId?.username}</Text>
                     <View style={styles.tagsContainer}>
                       <View
                         style={[
                           styles.tag,
-                          getLoanTypeTagStyle(loanTypetoColor(lead.loanType)),
+                          getLoanTypeTagStyle(loanTypetoColor(lead?.loanType)),
                         ]}>
                         <Text
                           style={[
                             styles.tagText,
-                            {color : getLoanTypeTagStyle(loanTypetoColor(lead.loanType)).color},
+                            {color : getLoanTypeTagStyle(loanTypetoColor(lead?.loanType)).color},
                           ]}>
-                          {lead.loanType}
+                          {lead?.loanType}
                         </Text>
                       </View>
-                      <View style={[styles.tag, getStatusTagStyle(loanStatusToColor(lead.loanStatus))]}>
+                      <View style={[styles.tag, getStatusTagStyle(loanStatusToColor(lead?.loanStatus))]}>
                         <Text
                           style={[
                             styles.tagText,
-                            { color: getStatusTagStyle(loanStatusToColor(lead.loanStatus)).color },
+                            { color: getStatusTagStyle(loanStatusToColor(lead?.loanStatus)).color },
                           ]}>
-                          {lead.loanStatus}
+                          {lead?.loanStatus}
                         </Text>
                       </View>
                     </View>

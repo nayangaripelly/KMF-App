@@ -1,17 +1,25 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const schema = mongoose.Schema;
+const { Schema } = mongoose;
 const objectId = mongoose.Types.ObjectId;
 
-const meetstatus = ["met","notmet","meet_later"];
+const meetStatuses = ['met', 'notmet', 'meetagain'];
 
-const meetlogschema = new schema({
-    userId:{type:objectId, ref:"users",require:true},
-    clientId:{type:objectId, ref:"clients",require:true},
-    meetStatus:{type:String, enum:meetstatus, require:true},
-    visitTime:{type:String, require: true},
-    distanceTravelled: {type:Number},
-    notes:{type:String}
-})
+const meetlogSchema = new Schema(
+  {
+    clientId: { type: objectId, ref: 'clients', required: true },
+    fieldPersonId: { type: objectId, ref: 'users', required: true },
+    meetStatus: { type: String, enum: meetStatuses, required: true },
+    distanceTravelled: { type: Number, default: 0 },
+    timestamp: { type: Date, default: Date.now },
+    notes: { type: String },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-export const meetlogModel = mongoose.model("meetlogs",meetlogschema);
+meetlogSchema.index({ fieldPersonId: 1, timestamp: -1 });
+meetlogSchema.index({ clientId: 1 });
+
+export const meetlogModel = mongoose.model('meetlogs', meetlogSchema);
