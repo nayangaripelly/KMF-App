@@ -28,63 +28,75 @@ interface Salesperson {
   createdAt: string;
 }
 
+type RoleFilter = 'salesperson' | 'fieldperson';
+
 export default function StatisticsPage() {
   const { user,token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-    const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
-    const [fieldpersons, setFieldpersons] = useState<Salesperson[]>([]);
+  const [activeRoleFilter, setActiveRoleFilter] = useState<RoleFilter>('salesperson');
+  const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
+  const [fieldpersons, setFieldpersons] = useState<Salesperson[]>([]);
 
   useEffect(() => {
     const fetchSalespersons = async () => {
-      const response = await fetch(`${API_URL}/api/v1/users/salespersons`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      setSalespersons(data.salespersons != null? data.salespersons : []);
+      try {
+        const response = await fetch(`${API_URL}/api/v1/users/salespersons`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        console.log('[STATISTICS] Fetched salespersons:', data);
+        setSalespersons(data.salespersons != null? data.salespersons : []);
+      } catch (error) {
+        console.error('[STATISTICS] Error fetching salespersons:', error);
+        setSalespersons([]);
+      }
     };
     fetchSalespersons();
-  }, []);
-  useEffect(()=>{
-    const fetchfieldpersons = async () => {
-      const response = await fetch(`${API_URL}/api/v1/users/fieldpersons`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-      setFieldpersons(data.fieldpersons != null? data.fieldpersons : []);
+  }, [token]);
+
+  useEffect(() => {
+    const fetchFieldpersons = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/users/fieldpersons`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        console.log('[STATISTICS] Fetched fieldpersons:', data);
+        setFieldpersons(data.fieldpersons != null? data.fieldpersons : []);
+      } catch (error) {
+        console.error('[STATISTICS] Error fetching fieldpersons:', error);
+        setFieldpersons([]);
+      }
     };
-    fetchfieldpersons();
-  }, []);
-  // const salespersons: Salesperson[] = [
-  //   { id: 'sp1', name: 'Alex Johnson', contact: '+1 (555) 123-4567' },
-  //   { id: 'sp2', name: 'Maria Garcia', contact: 'maria.garcia@company.com' },
-  //   { id: 'sp3', name: 'David Kumar', contact: '+1 (555) 234-5678' },
-  //   { id: 'sp4', name: 'Lisa Chen', contact: 'lisa.chen@company.com' },
-  //   { id: 'sp5', name: 'James Rodriguez', contact: '+1 (555) 345-6789' },
-  //   { id: 'sp6', name: 'Sarah Thompson', contact: 'sarah.thompson@company.com' },
-  // ];
+    fetchFieldpersons();
+  }, [token]);
 
+  const currentList = activeRoleFilter === 'salesperson' ? salespersons : fieldpersons;
 
-  const filteredSalespersons = salespersons.filter((person) =>
+  const filteredList = currentList.filter((person) =>
     person.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleViewStats = (salesperson: Salesperson) => {
+  const handleViewStats = (person: Salesperson) => {
     router.push({
       pathname: '/admin/statistics/[id]',
-      params: { id: salesperson._id, name: salesperson.username },
+      params: { 
+        id: person._id, 
+        name: person.username,
+        role: activeRoleFilter,
+      },
     } as any);
   };
 
@@ -119,22 +131,56 @@ export default function StatisticsPage() {
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}>
+        {/* Role Filter Toggle */}
+        <View style={styles.roleFilterContainer}>
+          <TouchableOpacity
+            style={[
+              styles.roleFilterButton,
+              activeRoleFilter === 'salesperson' && styles.roleFilterButtonActive,
+            ]}
+            onPress={() => setActiveRoleFilter('salesperson')}
+            activeOpacity={0.7}>
+            <Text
+              style={[
+                styles.roleFilterText,
+                activeRoleFilter === 'salesperson' && styles.roleFilterTextActive,
+              ]}>
+              Salespersons
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.roleFilterButton,
+              activeRoleFilter === 'fieldperson' && styles.roleFilterButtonActive,
+            ]}
+            onPress={() => setActiveRoleFilter('fieldperson')}
+            activeOpacity={0.7}>
+            <Text
+              style={[
+                styles.roleFilterText,
+                activeRoleFilter === 'fieldperson' && styles.roleFilterTextActive,
+              ]}>
+              Field Persons
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <IconSymbol name="magnifyingglass" size={20} color="#9BA1A6" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search salesperson by name…"
+            placeholder={`Search ${activeRoleFilter === 'salesperson' ? 'salesperson' : 'field person'} by name…`}
             placeholderTextColor="#9BA1A6"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
 
-        {/* Salesperson List */}
+        {/* User List */}
         <View style={styles.salespersonList}>
-          {filteredSalespersons.length > 0 ? (
-            filteredSalespersons.map((person) => (
+          {filteredList.length > 0 ? (
+            filteredList.map((person) => (
               <TouchableOpacity
                 key={person._id}
                 style={styles.salespersonCard}
@@ -149,6 +195,9 @@ export default function StatisticsPage() {
                       {person.username}
                     </ThemedText>
                     <Text style={styles.salespersonContact}>{person.emailId}</Text>
+                    <Text style={styles.roleBadge}>
+                      {activeRoleFilter === 'salesperson' ? '📞 Salesperson' : '🚶 Field Person'}
+                    </Text>
                   </View>
                 </View>
                 <IconSymbol name="chevron.right" size={20} color="#9BA1A6" />
@@ -156,7 +205,9 @@ export default function StatisticsPage() {
             ))
           ) : (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No salespersons found</Text>
+              <Text style={styles.emptyText}>
+                No {activeRoleFilter === 'salesperson' ? 'salespersons' : 'field persons'} found
+              </Text>
             </View>
           )}
         </View>
@@ -208,6 +259,35 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 16,
     paddingBottom: 100,
+  },
+  roleFilterContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  roleFilterButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  roleFilterButtonActive: {
+    backgroundColor: '#0a7ea4',
+  },
+  roleFilterText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#9BA1A6',
+  },
+  roleFilterTextActive: {
+    color: '#FFFFFF',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -281,6 +361,13 @@ const styles = StyleSheet.create({
   salespersonContact: {
     fontSize: 14,
     color: '#9BA1A6',
+    marginBottom: 4,
+  },
+  roleBadge: {
+    fontSize: 12,
+    color: '#0a7ea4',
+    fontWeight: '600',
+    marginTop: 2,
   },
   emptyContainer: {
     paddingVertical: 48,
