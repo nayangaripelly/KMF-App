@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
   },
   barWrapper: {
     width: '100%',
-    height: '100%',
+    height: '80%',
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
     overflow: 'hidden',
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   barLabel: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: '600',
     color: '#1E3A5F',
     textAlign: 'center',

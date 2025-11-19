@@ -1,18 +1,17 @@
+import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import React, { useState } from 'react';
 import {
-  View,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  View,
 } from 'react-native';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 
 interface CreateClientFormProps {
   visible: boolean;
@@ -43,7 +42,7 @@ export default function CreateClientForm({ visible, onClose, onSubmit }: CreateC
       onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined as any}
           style={styles.keyboardView}>
           <View style={styles.container}>
             <View style={styles.header}>
@@ -114,10 +113,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   container: {
+    flex:1,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '80%',
+    maxHeight: '65%',
     paddingTop: 24,
     paddingBottom: Platform.OS === 'ios' ? 40 : 24,
     ...(Platform.OS === 'web'
