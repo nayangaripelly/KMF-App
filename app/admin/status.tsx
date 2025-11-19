@@ -14,7 +14,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 interface Leads {
   _id: string;
   clientId: {
@@ -49,7 +48,7 @@ export default function AdminStatusPage() {
     const fetchAllLeads = async () => {
       try {
         console.log("fetching leads");
-        const response = await fetch('http://localhost:3003/api/v1/leads',
+        const response = await fetch('http://192.168.137.231:3003/api/v1/leads',
           {
             method:"GET",
             headers: {

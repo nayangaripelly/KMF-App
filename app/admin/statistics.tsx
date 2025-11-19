@@ -31,7 +31,7 @@ export default function StatisticsPage() {
 
   useEffect(() => {
     const fetchSalespersons = async () => {
-      const response = await fetch(`http://localhost:3003/api/v1/users/salespersons`,
+      const response = await fetch(`http://192.168.137.231:3003/api/v1/users/salespersons`,
         {
           method: "GET",
           headers: {

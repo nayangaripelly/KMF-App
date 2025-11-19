@@ -34,7 +34,7 @@ async function main()
 {
     await mongoose.connect(mongourl);
     console.log('[SERVER] Connected to MongoDB');
-    app.listen(3003, () => {
+    app.listen(3003,'0.0.0.0', () => {
         console.log('[SERVER] Backend server running on port 3003');
         console.log('[SERVER] Available endpoints:');
         console.log('  - POST /api/v1/users/signup');

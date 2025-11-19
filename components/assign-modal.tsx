@@ -15,6 +15,7 @@ interface Client {
   id: string;
   name: string;
   phone: string;
+  location: string;
 }
 interface Salesperson {
   _id: string;
@@ -27,23 +28,26 @@ interface Salesperson {
 
 interface AssignModalProps {
   visible: boolean;
-  client: Client | null;
+  clients: Client[];
   salespersons: Salesperson[];
   onClose: () => void;
-  onAssign: (salesperson: Salesperson) => void;
+  onAssign: (salesperson: Salesperson, clients: Client[]) => void;
 }
 
 export default function AssignModal({
   visible,
-  client,
+  clients,
   salespersons,
   onClose,
   onAssign,
 }: AssignModalProps) {
-  if (!client) return null;
+  if (!clients.length) return null;
+
+  const isSingleClient = clients.length === 1;
+  const primaryClient = clients[0];
 
   const handleAssign = (salesperson: Salesperson) => {
-    onAssign(salesperson);
+    onAssign(salesperson, clients);
     onClose();
   };
 
@@ -57,7 +61,7 @@ export default function AssignModal({
         <View style={styles.container}>
           <View style={styles.header}>
             <ThemedText type="title" style={styles.title}>
-              Assign Client
+              {isSingleClient ? 'Assign Client' : 'Assign Clients'}
             </ThemedText>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <IconSymbol name="xmark" size={24} color="#1E3A5F" />
@@ -66,10 +70,34 @@ export default function AssignModal({
 
           <View style={styles.clientInfo}>
             <Text style={styles.clientInfoLabel}>Assigning</Text>
-            <ThemedText type="defaultSemiBold" style={styles.clientName}>
-              {client.name}
-            </ThemedText>
-            <Text style={styles.clientPhone}>{client.phone}</Text>
+            {isSingleClient ? (
+              <>
+                <ThemedText type="defaultSemiBold" style={styles.clientName}>
+                  {primaryClient.name}
+                </ThemedText>
+                <Text style={styles.clientPhone}>{primaryClient.phone}</Text>
+                {primaryClient.location ? (
+                  <Text style={styles.clientLocation}>{primaryClient.location}</Text>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <ThemedText type="defaultSemiBold" style={styles.clientName}>
+                  {clients.length} clients selected
+                </ThemedText>
+                <ScrollView style={styles.multiClientList}>
+                  {clients.map((client) => (
+                    <View key={client.id} style={styles.multiClientItem}>
+                      <Text style={styles.multiClientName}>{client.name}</Text>
+                      <Text style={styles.multiClientMeta}>{client.phone}</Text>
+                      {client.location ? (
+                        <Text style={styles.multiClientMeta}>{client.location}</Text>
+                      ) : null}
+                    </View>
+                  ))}
+                </ScrollView>
+              </>
+            )}
           </View>
 
           <Text style={styles.sectionTitle}>Select Salesperson</Text>
@@ -156,6 +184,29 @@ const styles = StyleSheet.create({
   clientPhone: {
     fontSize: 14,
     color: '#0a7ea4',
+  },
+  clientLocation: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  multiClientList: {
+    maxHeight: 180,
+    marginTop: 8,
+  },
+  multiClientItem: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  multiClientName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1E3A5F',
+  },
+  multiClientMeta: {
+    fontSize: 13,
+    color: '#6B7280',
   },
   sectionTitle: {
     fontSize: 14,

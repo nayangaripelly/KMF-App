@@ -11,7 +11,8 @@ const getApiBaseUrl = (): string => {
   }
   // Default to localhost for development
   // Change this to your computer's IP address if testing on physical device
-  return 'http://localhost:3003/api/v1';
+  // return 'http://localhost:3003/api/v1';
+  return 'http://192.168.137.231:3003/api/v1'
 };
 
 const API_BASE_URL = getApiBaseUrl();
