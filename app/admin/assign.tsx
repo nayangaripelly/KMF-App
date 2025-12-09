@@ -23,10 +23,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as XLSX from 'xlsx';
-// dotenv.config();
-// const API_URL="http://192.168.217.146:3003";
-const API_URL="http://192.168.137.41:3003";
-// const API_URL="http://localhost:3003";
+// const API_URL="http://192.168.106.199:3003";
+const API_URL="http://localhost:3003";
 
 interface Client {
   id: string;

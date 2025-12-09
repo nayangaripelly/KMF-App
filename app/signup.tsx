@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   roleButtonText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     textTransform: 'capitalize',
   },

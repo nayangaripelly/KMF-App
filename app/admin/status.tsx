@@ -35,10 +35,8 @@ interface Leads {
   createdAt: string;
   updatedAt: string;
 }
-// dotenv.config();
-// const API_URL="http://192.168.217.146:3003";
-// const API_URL="http://localhost:3003";
-const API_URL="http://192.168.137.41:3003";
+const API_URL="http://localhost:3003";
+// const API_URL="http://192.168.106.199:3003";
 export default function AdminStatusPage() {
   const { user,token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');

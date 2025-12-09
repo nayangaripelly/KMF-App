@@ -14,10 +14,8 @@ const getApiBaseUrl = (): string => {
   // return 'http://localhost:3003/api/v1';
   return `${API_URL}/api/v1`
 };
-// dotenv.config();
-// const API_URL="http://192.168.217.146:3003";
-// const API_URL="http://localhost:3003";
-const API_URL="http://192.168.137.41:3003";
+const API_URL="http://localhost:3003";
+// const API_URL="http://192.168.106.199:3003";
 const API_BASE_URL = getApiBaseUrl();
 
 interface LoginResponse {
