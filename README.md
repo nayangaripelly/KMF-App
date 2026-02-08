@@ -1,4 +1,61 @@
-# Welcome to your Expo app 👋
+# KM Finance App
+
+Imagine a situation where a financial company is having a manager
+-> to see the status of clients (whether they are interested in taking loan or not)
+-> to assign work (clients) to employees and
+-> keep track of work done by employees
+
+Employees:
+
+ Sales_persons : whose work is to call to clients and ask whether they are interested in taking loan and collect info about what type of loan needed,amount needed, etc. 
+
+ Field_persons-> whose work is to go and visit the clients and collect documents and talk to clients.
+
+Problem: 
+  It becomes increasingly difficult to assign work and track progress using xl sheets as number of clients grow and company grow... having an application which keeps tracks of no. of calls done/ no. of clients visited,  to assign work to these employees and to check status of all clients solves this problem.That is what we are solving here.
+
+## Tech Stack Used:
+
+React Native for frontend
+Node.js - typescript for backend
+Express.js for APIs
+JWT for authentication
+MongoDB for database
+
+# Screenshots
+
+## Admin Pages
+
+<image alt = "AdminAssign" src = "./assests/images/AdminAssign" />
+<image alt = "AdminAssignModel" src = "./assests/images/AdminAssignModel"/>
+<image alt = "AdminClientCreateModal" src = "./assets/images/AdminClientCreateModal" />
+<image alt = "AdminStatus" src = "./assets/images/AdminStatus" />
+<image alt = "AdminSeeStats" src = "./assets/images/AdminSeeStats" />
+<image alt = "AdminSeeStats2" src = "./assets/images/AdminSeeStats2" />
+<image alt = "AdminSeeStats3" src = "./assets/images/AdminSeeStats3" />
+
+## Salesperson Pages
+
+<image alt = "Work" src = "./assets/images/SalesWork" />
+<image alt = "ViewDetails" src = "./assets/images/SalesViewDetails" />
+<image alt = "ViewDetails2" src = "./assets/images/SalesViewDetails2" />
+<image alt = "CallLogs" src = "./assests/images/CallLogs" />
+<image alt = "CallStats" src = "./assests/images/CallStats" />
+<image alt = "Callstatus" src = "./assets/images/CallStatus" />
+
+## Fieldperson Pages
+
+<image alt = "FieldWork" src = "./assets/images/FieldWork" />
+<image alt = "MeetDetails1" src = "./assests/images/MeetDetails1" />
+<image alt = "MeetDetails2" src = "./assets/images/MeetDetails2" />
+<image alt = "MeetStatus" src = "./assests/images/MeetStatus" />
+<image alt = "Meetlogs" src = "./assets/images/Meetlogs" />
+<image alt = "MeetStats" src = "./assets/images/MeetStats" />
+
+## Profile Page
+<image alt = "Profile" src ="./assets/images/Profile" />
+
+# Setup
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
