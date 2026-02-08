@@ -26,34 +26,34 @@ MongoDB for database
 
 ## Admin Pages
 
-<img alt = "AdminAssign" src = "./assets/images/AdminAssign" />
-<img alt = "AdminAssignModel" src = "./assets/images/AdminAssignModel"/>
-<img alt = "AdminClientCreateModal" src = "./assets/images/AdminClientCreateModal" />
-<img alt = "AdminStatus" src = "./assets/images/AdminStatus" />
-<img alt = "AdminSeeStats" src = "./assets/images/AdminSeeStats" />
-<img alt = "AdminSeeStats2" src = "./assets/images/AdminSeeStats2" />
-<img alt = "AdminSeeStats3" src = "./assets/images/AdminSeeStats3" />
+<img alt = "AdminAssign" src = "./assets/images/AdminAssign.png" />
+<img alt = "AdminAssignModel" src = "./assets/images/AdminAssignModel.png"/>
+<img alt = "AdminClientCreateModal" src = "./assets/images/AdminClientCreateModal.png" />
+<img alt = "AdminStatus" src = "./assets/images/AdminStatus.png" />
+<img alt = "AdminSeeStats" src = "./assets/images/AdminSeeStats.png" />
+<img alt = "AdminSeeStats2" src = "./assets/images/AdminSeeStats2.png" />
+<img alt = "AdminSeeStats3" src = "./assets/images/AdminSeeStats3.png" />
 
 ## Salesperson Pages
 
-<img alt = "Work" src = "./assets/images/SalesWork" />
-<img alt = "ViewDetails" src = "./assets/images/SalesViewDetails" />
-<img alt = "ViewDetails2" src = "./assets/images/SalesViewDetails2" />
-<img alt = "CallLogs" src = "./assets/images/CallLogs" />
-<img alt = "CallStats" src = "./assets/images/CallStats" />
-<img alt = "Callstatus" src = "./assets/images/CallStatus" />
+<img alt = "Work" src = "./assets/images/SalesWork.png" />
+<img alt = "ViewDetails" src = "./assets/images/SalesViewDetails.png" />
+<img alt = "ViewDetails2" src = "./assets/images/SalesViewDetails2.png" />
+<img alt = "CallLogs" src = "./assets/images/CallLogs.png" />
+<img alt = "CallStats" src = "./assets/images/CallStats.png" />
+<img alt = "Callstatus" src = "./assets/images/CallStatus.png" />
 
 ## Fieldperson Pages
 
-<img alt = "FieldWork" src = "./assets/images/FieldWork" />
-<img alt = "MeetDetails1" src = "./assets/images/MeetDetails1" />
-<img alt = "MeetDetails2" src = "./assets/images/MeetDetails2" />
-<img alt = "MeetStatus" src = "./assets/images/MeetStatus" />
-<img alt = "Meetlogs" src = "./assets/images/Meetlogs" />
-<img alt = "MeetStats" src = "./assets/images/MeetStats" />
+<img alt = "FieldWork" src = "./assets/images/FieldWork.png" />
+<img alt = "MeetDetails1" src = "./assets/images/MeetDetails1.png" />
+<img alt = "MeetDetails2" src = "./assets/images/MeetDetails2.png" />
+<img alt = "MeetStatus" src = "./assets/images/MeetStatus.png" />
+<img alt = "Meetlogs" src = "./assets/images/Meetlogs.png" />
+<img alt = "MeetStats" src = "./assets/images/MeetStats.png" />
 
 ## Profile Page
-<img alt = "Profile" src ="./assets/images/Profile" />
+<img alt = "Profile" src ="./assets/images/Profile.png" />
 
 # Setup
 
