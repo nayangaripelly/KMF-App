@@ -27,7 +27,7 @@ MongoDB for database
 ## Admin Pages
 
 <img alt = "AdminAssign" width="375" height="667" src = "./assets/images/AdminAssign.png" />
-<img alt = "AdminAssignModel" width="375" height="667" src = "./assets/images/AdminAssignModel.png"/>
+<img alt = "AdminAssignModel" width="375" height="667" src = "./assets/images/AdminAssignModal.png"/>
 <img alt = "AdminClientCreateModal" width="375" height="667" src = "./assets/images/AdminClientCreateModal.png" />
 <img alt = "AdminStatus" width="375" height="667" src = "./assets/images/AdminStatus.png" />
 <img alt = "AdminSeeStats" width="375" height="667" src = "./assets/images/AdminSeeStats.png" />
@@ -37,7 +37,7 @@ MongoDB for database
 ## Salesperson Pages
 
 <img alt = "Work"  width="375" height="667" src = "./assets/images/SalesWork.png" />
-<img alt = "ViewDetails" width="375" height="667" src = "./assets/images/SalesViewDetails.png" />
+<img alt = "ViewDetails" width="375" height="667" src = "./assets/images/SalesViewDetails1.png" />
 <img alt = "ViewDetails2" width="375" height="667" src = "./assets/images/SalesViewDetails2.png" />
 <img alt = "CallLogs" width="375" height="667" src = "./assets/images/CallLogs.png" />
 <img alt = "CallStats" width="375" height="667" src = "./assets/images/CallStats.png" />
