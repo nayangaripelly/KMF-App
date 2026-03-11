@@ -1,8 +1,8 @@
 # KM Finance App
 
-Imagine a situation where a financial company is having a manager
--> to see the status of clients (whether they are interested in taking loan or not)
--> to assign work (clients) to employees and
+Imagine a situation where a financial company is having a manager <br/>
+-> to see the status of clients (whether they are interested in taking loan or not)<br/>
+-> to assign work (clients) to employees and<br/>
 -> keep track of work done by employees
 
 Employees:
@@ -16,10 +16,10 @@ Problem:
 
 ## Tech Stack Used:
 
-React Native for frontend
-Node.js - typescript for backend
-Express.js for APIs
-JWT for authentication
+React Native for frontend <br/>
+Node.js - typescript for backend <br/>
+Express.js for APIs <br/>
+JWT for authentication <br/>
 MongoDB for database
 
 # Screenshots
